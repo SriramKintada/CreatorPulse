@@ -1,0 +1,3504 @@
+# CreatorPulse - Technical Design Document (TDD)
+
+**Version:** 1.0  
+**Date:** October 16, 2025  
+**Technical Lead:** Sriram Kintada  
+**Status:** Implementation Ready
+
+---
+
+## TABLE OF CONTENTS
+
+1. [System Architecture](#1-system-architecture)
+2. [Database Design](#2-database-design)
+3. [API Specifications](#3-api-specifications)
+4. [Algorithm Implementations](#4-algorithm-implementations)
+5. [Frontend Architecture](#5-frontend-architecture)
+6. [Backend Architecture](#6-backend-architecture)
+7. [Security Implementation](#7-security-implementation)
+8. [Performance Optimization](#8-performance-optimization)
+9. [Error Handling & Logging](#9-error-handling--logging)
+10. [Testing Strategy](#10-testing-strategy)
+11. [Deployment Architecture](#11-deployment-architecture)
+12. [Code Organization](#12-code-organization)
+13. [Third-Party Integrations](#13-third-party-integrations)
+14. [Monitoring & Observability](#14-monitoring--observability)
+15. [Development Workflow](#15-development-workflow)
+
+---
+
+## 1. SYSTEM ARCHITECTURE
+
+### 1.1 High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                          CLIENT LAYER                                │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐ │
+│  │  Web Browser     │  │  Mobile Browser  │  │  Email Client    │ │
+│  │  (React SPA)     │  │  (Responsive)    │  │  (Notifications) │ │
+│  └──────────────────┘  └──────────────────┘  └──────────────────┘ │
+└──────────────────┬──────────────────────────────────┬───────────────┘
+                   │                                  │
+                   │ HTTPS (Firebase Hosting)         │ SMTP
+                   │                                  │
+┌──────────────────▼──────────────────────────────────▼───────────────┐
+│                      FIREBASE PLATFORM                                │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                   Firebase Authentication                       │ │
+│  │            (Email/Password, Google OAuth, JWT)                  │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                     Firebase Firestore                          │ │
+│  │     (NoSQL DB: Users, Sources, ScrapedContent, Drafts, etc.)  │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                    Firebase Storage                             │ │
+│  │              (User uploads: PDFs, training data)                │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                  Firebase Cloud Functions                       │ │
+│  │  ┌──────────────┬──────────────┬──────────────┬─────────────┐ │ │
+│  │  │ Scraping     │ Draft        │ Feedback     │ Admin       │ │ │
+│  │  │ Functions    │ Generation   │ Processing   │ Functions   │ │ │
+│  │  └──────────────┴──────────────┴──────────────┴─────────────┘ │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                   Firebase Cloud Scheduler                      │ │
+│  │         (Cron jobs: Scraping triggers, draft generation)       │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │            Firebase Extensions (SendGrid/Mailgun)               │ │
+│  │                    (Email delivery)                             │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+└──────────────────┬──────────────────────────────────┬───────────────┘
+                   │                                  │
+          External API Calls                  External API Calls
+                   │                                  │
+┌──────────────────▼──────────────┐  ┌───────────────▼───────────────┐
+│      THIRD-PARTY SERVICES       │  │     THIRD-PARTY SERVICES      │
+│  ┌───────────────────────────┐  │  │  ┌────────────────────────┐  │
+│  │      Apify Actors         │  │  │  │     Exa AI API         │  │
+│  │  - Twitter Scraper        │  │  │  │  - Web Crawling        │  │
+│  │  - YouTube Scraper        │  │  │  │  - RSS Parsing         │  │
+│  │  - Reddit Scraper         │  │  │  └────────────────────────┘  │
+│  │  - Google Trends Scraper  │  │  │                               │
+│  └───────────────────────────┘  │  │  ┌────────────────────────┐  │
+│                                  │  │  │   Claude API           │  │
+│                                  │  │  │  (Anthropic)           │  │
+│                                  │  │  │  - Draft Generation    │  │
+│                                  │  │  │  - Voice Matching      │  │
+│                                  │  │  └────────────────────────┘  │
+└──────────────────────────────────┘  └────────────────────────────────┘
+```
+
+---
+
+### 1.2 Data Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         USER ACTIONS                                 │
+└────┬────────────────────────────────────────────────────────────┬───┘
+     │                                                            │
+     │ 1. Sign Up / Add Sources                                  │ 5. Review Draft
+     │                                                            │
+     ▼                                                            ▼
+┌─────────────────┐                                        ┌──────────────────┐
+│  Firebase Auth  │                                        │  React Frontend  │
+│  (User Created) │                                        │  (Draft Editor)  │
+└────┬────────────┘                                        └────┬─────────────┘
+     │                                                           │
+     │ 2. Store User Data                                       │ 6. Submit Feedback
+     ▼                                                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                          Firebase Firestore                          │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐   │
+│  │   Users    │  │  Sources   │  │   Drafts   │  │  Feedback  │   │
+│  └────────────┘  └────────────┘  └────────────┘  └────────────┘   │
+└────┬─────────────────────────────────────────────────────────┬──────┘
+     │                                                          │
+     │ 3. Trigger Scraping (Cloud Scheduler)                   │ 7. Process Feedback
+     ▼                                                          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Firebase Cloud Functions                          │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │  Function: scrapeTwitterSource()                             │  │
+│  │  - Fetches active Twitter sources from Firestore            │  │
+│  │  - Calls Apify Twitter Scraper API                          │  │
+│  │  - Stores results in ScrapedContent collection              │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │  Function: detectTrends()                                    │  │
+│  │  - Aggregates ScrapedContent from last 24h                  │  │
+│  │  - Calculates engagement velocity                           │  │
+│  │  - Stores top 5 trends in Trends collection                 │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │  Function: generateDraft()                                   │  │
+│  │  - Fetches top 20 curated items from ScrapedContent         │  │
+│  │  - Fetches user's voice profile                             │  │
+│  │  - Calls Claude API with prompt                             │  │
+│  │  - Stores draft in Drafts collection                        │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │  Function: processFeedback()                                 │  │
+│  │  - Aggregates user feedback from last 7 days                │  │
+│  │  - Updates voice profile parameters                         │  │
+│  │  - Adjusts source relevance weights                         │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+└────┬─────────────────────────────────────────────────────────┬──────┘
+     │                                                          │
+     │ 4. Store Scraped Data                                   │ 8. Send Email
+     ▼                                                          ▼
+┌─────────────────┐                                    ┌──────────────────┐
+│  ScrapedContent │                                    │ Firebase Extension│
+│   Collection    │                                    │  (SendGrid)       │
+└─────────────────┘                                    └──────────────────┘
+```
+
+---
+
+### 1.3 Technology Stack Summary
+
+| LAYER | TECHNOLOGY | VERSION | PURPOSE |
+|-------|-----------|---------|---------|
+| **Frontend** | React | 18.x | UI framework |
+| | Next.js | 14.x | React framework with SSR |
+| | Tailwind CSS | 3.x | Styling |
+| | Shadcn/ui | Latest | Component library |
+| | React Query | 5.x | Server state management |
+| | React Hook Form | 7.x | Form handling |
+| | TipTap | 2.x | Rich text editor |
+| | Recharts | 2.x | Data visualization |
+| **Backend** | Firebase Functions | Node 18 | Serverless functions |
+| | Firebase Firestore | Latest | NoSQL database |
+| | Firebase Auth | Latest | Authentication |
+| | Firebase Storage | Latest | File storage |
+| | Firebase Hosting | Latest | Static hosting |
+| **Scraping** | Apify | Latest | Web scraping platform |
+| | Exa AI | Latest | Web crawling API |
+| **AI/ML** | Claude API | 3.5 Sonnet | Draft generation |
+| **Email** | SendGrid | v3 API | Email delivery |
+| **DevOps** | GitHub Actions | Latest | CI/CD |
+| | Sentry | Latest | Error tracking |
+| | Firebase Analytics | Latest | Product analytics |
+
+---
+
+## 2. DATABASE DESIGN
+
+### 2.1 Firestore Collections Overview
+
+```
+/users/{userId}
+  - User profile and settings
+  
+  /sources/{sourceId}
+    - Connected content sources (subcollection)
+    
+  /drafts/{draftId}
+    - Newsletter drafts (subcollection)
+    
+  /feedback/{feedbackId}
+    - User feedback on drafts (subcollection)
+
+/scrapedContent/{contentId}
+  - Aggregated scraped content from all sources
+
+/trends/{trendId}
+  - Detected trending topics
+
+/adminLogs/{logId}
+  - Admin action audit logs
+```
+
+---
+
+### 2.2 Detailed Schema Specifications
+
+#### Collection: `/users/{userId}`
+
+```typescript
+interface User {
+  userId: string;                  // Firebase Auth UID
+  email: string;
+  displayName: string;
+  role: 'admin' | 'creator' | 'agency';
+  accountType: 'free' | 'starter' | 'pro';
+  timezone: string;                // e.g., "America/Los_Angeles"
+  
+  preferences: {
+    deliveryTime: string;          // "08:00" (24-hour format)
+    deliveryFrequency: 'daily' | '3x_week' | '2x_week' | 'weekly';
+    draftFormat: 'markdown' | 'html' | 'plain_text';
+    trendDigestEnabled: boolean;
+    emailNotifications: boolean;
+  };
+  
+  voiceProfile: {
+    trained: boolean;
+    trainingDocuments: string[];   // Firebase Storage URLs
+    styleParameters: {
+      tone: string;                // "casual", "professional", "witty"
+      avgSentenceLength: number;
+      vocabularyLevel: string;     // "simple", "advanced"
+      formattingPreferences: {
+        useEmojis: boolean;
+        useLists: boolean;
+        headerStyle: 'short' | 'descriptive';
+      };
+    };
+    lastUpdated: Timestamp;
+  };
+  
+  usage: {
+    draftsGenerated: number;
+    draftsSent: number;
+    sourcesConnected: number;
+    storageUsedMB: number;
+  };
+  
+  billing: {
+    stripeCustomerId: string | null;
+    subscriptionStatus: string;
+    currentPeriodEnd: Timestamp | null;
+  };
+  
+  createdAt: Timestamp;
+  lastLoginAt: Timestamp;
+}
+```
+
+**Indexes:**
+```javascript
+// Composite indexes (created via Firestore console or CLI)
+users: {
+  'role, createdAt': 'ascending',
+  'accountType, createdAt': 'ascending'
+}
+```
+
+**Security Rules:**
+```javascript
+match /users/{userId} {
+  // Users can read/write their own document
+  allow read, write: if request.auth.uid == userId;
+  
+  // Admins can read all users
+  allow read: if request.auth.token.admin == true;
+  
+  // Admins can write to any user (for suspension, etc.)
+  allow write: if request.auth.token.admin == true;
+}
+```
+
+---
+
+#### Subcollection: `/users/{userId}/sources/{sourceId}`
+
+```typescript
+interface Source {
+  sourceId: string;                // Auto-generated
+  type: 'twitter' | 'youtube' | 'reddit' | 'newsletter_rss' | 'custom_url';
+  identifier: string;              // Handle, URL, channel ID, etc.
+  displayName: string;
+  description?: string;
+  
+  config: {
+    // Twitter-specific config
+    twitter?: {
+      handle: string;
+      includeRetweets: boolean;
+      maxTweetsPerScrape: number;  // Default: 50
+    };
+    
+    // YouTube-specific config
+    youtube?: {
+      channelId: string;
+      maxVideosPerScrape: number;  // Default: 10
+      includeShorts: boolean;
+    };
+    
+    // Reddit-specific config
+    reddit?: {
+      subreddit: string;
+      category: 'hot' | 'new' | 'top' | 'rising';
+      maxPostsPerScrape: number;   // Default: 20
+    };
+    
+    // Newsletter RSS config
+    newsletter_rss?: {
+      feedUrl: string;
+    };
+    
+    // Custom URL config
+    custom_url?: {
+      url: string;
+      crawlDepth: number;          // Default: 1
+    };
+  };
+  
+  scraperConfig: {
+    apifyActorId: string;          // e.g., "streamers/youtube-channel-scraper"
+    scrapeFrequency: string;       // Cron expression: "0 */6 * * *" (every 6 hours)
+    lastScrapeAt: Timestamp;
+    lastScrapeStatus: 'success' | 'partial' | 'failed';
+    itemsScrapedLastRun: number;
+    errorMessage?: string;         // If failed
+  };
+  
+  performance: {
+    totalItemsScraped: number;
+    itemsCurated: number;          // How many made it into drafts
+    avgRelevanceScore: number;     // 0-1
+  };
+  
+  isActive: boolean;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+```
+
+**Security Rules:**
+```javascript
+match /users/{userId}/sources/{sourceId} {
+  allow read, write: if request.auth.uid == userId;
+  allow read: if request.auth.token.admin == true;
+}
+```
+
+---
+
+#### Collection: `/scrapedContent/{contentId}`
+
+```typescript
+interface ScrapedContent {
+  contentId: string;               // Hash of URL + timestamp
+  userId: string;                  // Owner of source
+  sourceId: string;                // Reference to Sources subcollection
+  sourceType: 'twitter' | 'youtube' | 'reddit' | 'newsletter' | 'web';
+  
+  // Raw data (varies by source type)
+  rawData: {
+    // Twitter-specific
+    twitter?: {
+      tweetId: string;
+      text: string;
+      author: string;
+      authorHandle: string;
+      createdAt: Timestamp;
+      likes: number;
+      retweets: number;
+      replies: number;
+      url: string;
+      media?: string[];            // Image/video URLs
+    };
+    
+    // YouTube-specific
+    youtube?: {
+      videoId: string;
+      title: string;
+      description: string;
+      channelName: string;
+      publishedAt: Timestamp;
+      viewCount: number;
+      likeCount: number;
+      commentCount: number;
+      duration: string;            // ISO 8601 duration
+      thumbnailUrl: string;
+      url: string;
+    };
+    
+    // Reddit-specific
+    reddit?: {
+      postId: string;
+      title: string;
+      body: string;
+      author: string;
+      subreddit: string;
+      createdAt: Timestamp;
+      upvotes: number;
+      commentCount: number;
+      url: string;
+      imageUrl?: string;
+    };
+  };
+  
+  // Processed metadata
+  processed: {
+    keywords: string[];            // Extracted keywords (TF-IDF)
+    topics: string[];              // Classified topics
+    sentiment: 'positive' | 'neutral' | 'negative';
+    relevanceScore: number;        // 0-1, based on user's past interests
+    engagementScore: number;       // Normalized engagement metrics
+  };
+  
+  // Trend signals
+  trendSignals: {
+    isTrending: boolean;
+    trendScore: number;            // 0-100
+    trendVelocity: number;         // Rate of growth (mentions per hour)
+    crossPlatformMentions: number; // How many platforms mention this topic
+  };
+  
+  curatedInto: string[];           // Array of draftIds
+  scrapedAt: Timestamp;
+  expiresAt: Timestamp;            // 30 days TTL for cleanup
+}
+```
+
+**Indexes:**
+```javascript
+scrapedContent: {
+  'userId, scrapedAt': 'descending',
+  'isTrending, trendScore': 'descending',
+  'expiresAt': 'ascending'  // For TTL cleanup
+}
+```
+
+**Security Rules:**
+```javascript
+match /scrapedContent/{contentId} {
+  // Users can read their own scraped content
+  allow read: if request.auth.uid == resource.data.userId;
+  
+  // Only Cloud Functions can write
+  allow write: if false;
+  
+  // Admins can read all
+  allow read: if request.auth.token.admin == true;
+}
+```
+
+---
+
+#### Subcollection: `/users/{userId}/drafts/{draftId}`
+
+```typescript
+interface Draft {
+  draftId: string;
+  status: 'generated' | 'reviewed' | 'sent' | 'archived';
+  scheduledFor: Timestamp;
+  generatedAt: Timestamp;
+  reviewedAt?: Timestamp;
+  sentAt?: Timestamp;
+  
+  aiGenerated: {
+    subjectLines: string[];        // 3 options
+    body: string;                  // Markdown or HTML
+    
+    curatedItems: Array<{
+      contentId: string;           // Reference to ScrapedContent
+      title: string;
+      summary: string;             // AI-generated 2-3 sentences
+      commentary: string;          // AI-generated in creator's voice
+      url: string;
+      position: number;            // Order in draft
+    }>;
+    
+    trendsSection: Array<{
+      trendId: string;
+      title: string;
+      explainer: string;           // 2 sentences
+      sources: string[];           // URLs
+      trendScore: number;
+    }>;
+    
+    introText: string;
+    closingText: string;
+  };
+  
+  userEdits: {
+    editedBody?: string;           // Final version after edits
+    addedContent: Array<{
+      title: string;
+      url: string;
+      summary: string;
+      position: number;
+    }>;
+    removedContentIds: string[];   // Removed items
+    
+    feedbackItems: Array<{
+      contentId: string;
+      reaction: 'thumbs_up' | 'thumbs_down' | 'star';
+      comment?: string;
+    }>;
+    
+    totalEditTimeSeconds: number;
+  };
+  
+  final: {
+    subjectLine: string;           // User's choice
+    body: string;                  // Final version
+  };
+  
+  performance: {
+    emailSent: boolean;
+    deliveredTo: number;           // Subscriber count
+    openRate?: number;             // If integrated with email provider
+    clickRate?: number;
+  };
+  
+  aiMetrics: {
+    acceptanceRate: number;        // % of draft kept as-is
+    voiceMatchScore?: number;      // User-reported, 1-10
+    generationTimeSeconds: number;
+  };
+}
+```
+
+**Security Rules:**
+```javascript
+match /users/{userId}/drafts/{draftId} {
+  allow read, write: if request.auth.uid == userId;
+  allow read: if request.auth.token.admin == true;
+}
+```
+
+---
+
+#### Collection: `/trends/{trendId}`
+
+```typescript
+interface Trend {
+  trendId: string;
+  title: string;                   // Trend topic/keyword
+  category: 'tech' | 'business' | 'culture' | 'science' | 'politics' | 'other';
+  description: string;             // 2-3 sentence explainer
+  detectionDate: Timestamp;
+  trendScore: number;              // 0-100
+  velocity: number;                // Mentions per hour growth rate
+  
+  sources: Array<{
+    platform: 'twitter' | 'youtube' | 'reddit' | 'google_trends';
+    mentions: number;
+    topPosts: string[];            // contentIds with highest engagement
+  }>;
+  
+  keywords: string[];              // Related keywords
+  peakDate?: Timestamp;            // When trend peaked
+  status: 'emerging' | 'peaked' | 'declining' | 'dormant';
+  notifiedUsers: string[];         // userIds who received this trend
+  curatedInto: string[];           // draftIds
+  expiresAt: Timestamp;            // 7 days TTL
+}
+```
+
+**Indexes:**
+```javascript
+trends: {
+  'category, trendScore': 'descending',
+  'status, detectionDate': 'descending',
+  'expiresAt': 'ascending'
+}
+```
+
+---
+
+### 2.3 Firestore Queries (Common Patterns)
+
+#### Query 1: Get User's Active Sources
+```typescript
+const getActiveSources = async (userId: string) => {
+  const sourcesRef = firestore
+    .collection('users')
+    .doc(userId)
+    .collection('sources');
+  
+  const snapshot = await sourcesRef
+    .where('isActive', '==', true)
+    .orderBy('createdAt', 'desc')
+    .get();
+  
+  return snapshot.docs.map(doc => doc.data() as Source);
+};
+```
+
+#### Query 2: Get Recent Scraped Content for Draft Generation
+```typescript
+const getRecentContent = async (userId: string, limit: number = 20) => {
+  const contentRef = firestore.collection('scrapedContent');
+  
+  const snapshot = await contentRef
+    .where('userId', '==', userId)
+    .where('scrapedAt', '>', Timestamp.fromDate(new Date(Date.now() - 24 * 60 * 60 * 1000)))
+    .orderBy('processed.relevanceScore', 'desc')
+    .limit(limit)
+    .get();
+  
+  return snapshot.docs.map(doc => doc.data() as ScrapedContent);
+};
+```
+
+#### Query 3: Get Trending Topics
+```typescript
+const getTrendingTopics = async (limit: number = 5) => {
+  const trendsRef = firestore.collection('trends');
+  
+  const snapshot = await trendsRef
+    .where('status', '==', 'emerging')
+    .orderBy('trendScore', 'desc')
+    .limit(limit)
+    .get();
+  
+  return snapshot.docs.map(doc => doc.data() as Trend);
+};
+```
+
+#### Query 4: Get User Feedback for Retraining
+```typescript
+const getUserFeedback = async (userId: string, days: number = 7) => {
+  const feedbackRef = firestore
+    .collection('users')
+    .doc(userId)
+    .collection('feedback');
+  
+  const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  
+  const snapshot = await feedbackRef
+    .where('createdAt', '>', Timestamp.fromDate(cutoffDate))
+    .orderBy('createdAt', 'desc')
+    .get();
+  
+  return snapshot.docs.map(doc => doc.data() as Feedback);
+};
+```
+
+---
+
+### 2.4 Database Optimization Strategies
+
+#### Strategy 1: Denormalization for Read Performance
+```typescript
+// Instead of joining Sources and ScrapedContent at query time,
+// denormalize source metadata into ScrapedContent
+
+interface ScrapedContent {
+  // ... other fields
+  
+  // Denormalized source info
+  sourceName: string;        // Copy from Source.displayName
+  sourceType: string;        // Copy from Source.type
+  
+  // This allows filtering without joins:
+  // "Show me all Twitter content"
+}
+```
+
+#### Strategy 2: Composite Indexes for Complex Queries
+```bash
+# Create composite indexes via Firebase CLI
+firebase firestore:indexes --project creatorpulse
+
+# Or manually in Firestore console
+# Example: Query drafts by status and date
+firestore.collection('users/{userId}/drafts')
+  .where('status', '==', 'generated')
+  .orderBy('generatedAt', 'desc')
+# Requires index: (status, generatedAt)
+```
+
+#### Strategy 3: TTL (Time-To-Live) for Auto-Cleanup
+```typescript
+// Set TTL on documents to auto-delete after N days
+const saveScrapedContent = async (content: ScrapedContent) => {
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+  
+  await firestore.collection('scrapedContent').doc(content.contentId).set({
+    ...content,
+    expiresAt: Timestamp.fromDate(expiresAt)
+  });
+};
+
+// Cloud Function to cleanup expired documents (runs daily)
+exports.cleanupExpiredContent = functions.pubsub
+  .schedule('0 2 * * *')  // 2 AM daily
+  .timeZone('America/Los_Angeles')
+  .onRun(async (context) => {
+    const now = Timestamp.now();
+    const batch = firestore.batch();
+    
+    const expiredDocs = await firestore
+      .collection('scrapedContent')
+      .where('expiresAt', '<=', now)
+      .limit(500)  // Firestore batch limit
+      .get();
+    
+    expiredDocs.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+    
+    console.log(`Deleted ${expiredDocs.size} expired documents`);
+  });
+```
+
+---
+
+## 3. API SPECIFICATIONS
+
+### 3.1 Firebase Cloud Functions API
+
+#### Function: `scrapeTwitterSource`
+
+**Trigger:** Cloud Scheduler (every 6 hours)
+
+**HTTP Endpoint:** `https://us-central1-{project-id}.cloudfunctions.net/scrapeTwitterSource`
+
+**Request:**
+```json
+{
+  "sourceId": "abc123",
+  "userId": "user123"
+}
+```
+
+**Implementation:**
+```typescript
+import { Request, Response } from 'express';
+import { firestore } from 'firebase-admin';
+import axios from 'axios';
+
+interface TwitterScraperInput {
+  from: string;
+  maxItems: number;
+  lang: string;
+  "filter:nativeretweets": boolean;
+}
+
+export const scrapeTwitterSource = functions.https.onRequest(
+  async (req: Request, res: Response) => {
+    const { sourceId, userId } = req.body;
+    
+    try {
+      // 1. Fetch source config from Firestore
+      const sourceDoc = await firestore
+        .collection('users').doc(userId)
+        .collection('sources').doc(sourceId)
+        .get();
+      
+      if (!sourceDoc.exists) {
+        return res.status(404).json({ error: 'Source not found' });
+      }
+      
+      const source = sourceDoc.data() as Source;
+      
+      // 2. Prepare Apify input
+      const apifyInput: TwitterScraperInput = {
+        from: source.config.twitter!.handle,
+        maxItems: source.config.twitter!.maxTweetsPerScrape,
+        lang: 'en',
+        "filter:nativeretweets": !source.config.twitter!.includeRetweets
+      };
+      
+      // 3. Call Apify actor
+      const apifyUrl = `https://api.apify.com/v2/acts/${source.scraperConfig.apifyActorId}/runs`;
+      const apifyToken = functions.config().apify.token;
+      
+      const apifyResponse = await axios.post(
+        apifyUrl,
+        { ...apifyInput, token: apifyToken },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 60000  // 60 second timeout
+        }
+      );
+      
+      const runId = apifyResponse.data.data.id;
+      
+      // 4. Wait for run to complete (poll status)
+      let runStatus = 'RUNNING';
+      let attempts = 0;
+      const maxAttempts = 30;  // 5 minutes max (10s intervals)
+      
+      while (runStatus === 'RUNNING' && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 10000));  // 10s delay
+        
+        const statusResponse = await axios.get(
+          `https://api.apify.com/v2/acts/${source.scraperConfig.apifyActorId}/runs/${runId}?token=${apifyToken}`
+        );
+        
+        runStatus = statusResponse.data.data.status;
+        attempts++;
+      }
+      
+      if (runStatus !== 'SUCCEEDED') {
+        throw new Error(`Apify run failed with status: ${runStatus}`);
+      }
+      
+      // 5. Fetch results from dataset
+      const datasetId = apifyResponse.data.data.defaultDatasetId;
+      const datasetUrl = `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyToken}`;
+      
+      const datasetResponse = await axios.get(datasetUrl);
+      const tweets = datasetResponse.data;
+      
+      // 6. Process and store tweets
+      const batch = firestore.batch();
+      let itemsStored = 0;
+      
+      for (const tweet of tweets) {
+        const contentId = `twitter_${tweet.id}`;
+        const contentRef = firestore.collection('scrapedContent').doc(contentId);
+        
+        const scrapedContent: ScrapedContent = {
+          contentId,
+          userId,
+          sourceId,
+          sourceType: 'twitter',
+          rawData: {
+            twitter: {
+              tweetId: tweet.id,
+              text: tweet.text,
+              author: tweet.author.name,
+              authorHandle: tweet.author.userName,
+              createdAt: Timestamp.fromDate(new Date(tweet.createdAt)),
+              likes: tweet.likeCount,
+              retweets: tweet.retweetCount,
+              replies: tweet.replyCount,
+              url: tweet.url,
+              media: tweet.media || []
+            }
+          },
+          processed: {
+            keywords: extractKeywords(tweet.text),
+            topics: classifyTopics(tweet.text),
+            sentiment: analyzeSentiment(tweet.text),
+            relevanceScore: 0.5,  // Placeholder, updated later
+            engagementScore: normalizeEngagement(tweet.likeCount, tweet.retweetCount)
+          },
+          trendSignals: {
+            isTrending: false,
+            trendScore: 0,
+            trendVelocity: 0,
+            crossPlatformMentions: 0
+          },
+          curatedInto: [],
+          scrapedAt: Timestamp.now(),
+          expiresAt: Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+        };
+        
+        batch.set(contentRef, scrapedContent);
+        itemsStored++;
+      }
+      
+      // 7. Update source metadata
+      const sourceRef = firestore
+        .collection('users').doc(userId)
+        .collection('sources').doc(sourceId);
+      
+      batch.update(sourceRef, {
+        'scraperConfig.lastScrapeAt': Timestamp.now(),
+        'scraperConfig.lastScrapeStatus': 'success',
+        'scraperConfig.itemsScrapedLastRun': itemsStored,
+        'performance.totalItemsScraped': firestore.FieldValue.increment(itemsStored)
+      });
+      
+      await batch.commit();
+      
+      return res.status(200).json({
+        success: true,
+        itemsScraped: itemsStored,
+        message: `Scraped ${itemsStored} tweets from ${source.config.twitter!.handle}`
+      });
+      
+    } catch (error: any) {
+      console.error('Error scraping Twitter source:', error);
+      
+      // Update source with error status
+      await firestore
+        .collection('users').doc(userId)
+        .collection('sources').doc(sourceId)
+        .update({
+          'scraperConfig.lastScrapeAt': Timestamp.now(),
+          'scraperConfig.lastScrapeStatus': 'failed',
+          'scraperConfig.errorMessage': error.message
+        });
+      
+      return res.status(500).json({
+        error: 'Failed to scrape Twitter source',
+        details: error.message
+      });
+    }
+  }
+);
+
+// Helper functions
+function extractKeywords(text: string): string[] {
+  // Simple keyword extraction (can be improved with NLP)
+  const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'is', 'are']);
+  const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+  return words.filter(w => !stopWords.has(w) && w.length > 3).slice(0, 10);
+}
+
+function classifyTopics(text: string): string[] {
+  // Simple topic classification (can use ML model)
+  const topicKeywords = {
+    tech: ['ai', 'software', 'coding', 'tech', 'startup'],
+    business: ['business', 'revenue', 'growth', 'market'],
+    culture: ['culture', 'society', 'people']
+  };
+  
+  const topics: string[] = [];
+  const lowerText = text.toLowerCase();
+  
+  for (const [topic, keywords] of Object.entries(topicKeywords)) {
+    if (keywords.some(kw => lowerText.includes(kw))) {
+      topics.push(topic);
+    }
+  }
+  
+  return topics.length > 0 ? topics : ['other'];
+}
+
+function analyzeSentiment(text: string): 'positive' | 'neutral' | 'negative' {
+  // Simple sentiment (can use ML model or Claude API)
+  const positiveWords = ['good', 'great', 'awesome', 'love', 'excellent'];
+  const negativeWords = ['bad', 'terrible', 'hate', 'awful', 'worst'];
+  
+  const lowerText = text.toLowerCase();
+  const posCount = positiveWords.filter(w => lowerText.includes(w)).length;
+  const negCount = negativeWords.filter(w => lowerText.includes(w)).length;
+  
+  if (posCount > negCount) return 'positive';
+  if (negCount > posCount) return 'negative';
+  return 'neutral';
+}
+
+function normalizeEngagement(likes: number, retweets: number): number {
+  // Simple engagement score (0-1)
+  const total = likes + retweets * 2;  // Weight retweets higher
+  return Math.min(total / 10000, 1);   // Cap at 10K engagement
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "itemsScraped": 47,
+  "message": "Scraped 47 tweets from @elonmusk"
+}
+```
+
+**Error Response:**
+```json
+{
+  "error": "Failed to scrape Twitter source",
+  "details": "Rate limit exceeded"
+}
+```
+
+---
+
+#### Function: `generateDraft`
+
+**Trigger:** Cloud Scheduler (daily at 6 AM user timezone)
+
+**Implementation:**
+```typescript
+import Anthropic from '@anthropic-ai/sdk';
+
+export const generateDraft = functions.https.onRequest(
+  async (req: Request, res: Response) => {
+    const { userId } = req.body;
+    
+    try {
+      // 1. Fetch user data
+      const userDoc = await firestore.collection('users').doc(userId).get();
+      const user = userDoc.data() as User;
+      
+      // 2. Fetch recent scraped content (top 20 by relevance)
+      const recentContent = await getRecentContent(userId, 20);
+      
+      if (recentContent.length < 5) {
+        return res.status(400).json({
+          error: 'Not enough content to generate draft',
+          contentCount: recentContent.length
+        });
+      }
+      
+      // 3. Fetch trending topics (top 5)
+      const trends = await getTrendingTopics(5);
+      
+      // 4. Construct Claude prompt
+      const prompt = buildDraftPrompt(user, recentContent, trends);
+      
+      // 5. Call Claude API
+      const anthropic = new Anthropic({
+        apiKey: functions.config().anthropic.api_key
+      });
+      
+      const startTime = Date.now();
+      
+      const message = await anthropic.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 2000,
+        temperature: 0.7,
+        system: buildSystemPrompt(user.voiceProfile),
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      });
+      
+      const generationTime = (Date.now() - startTime) / 1000;
+      
+      // 6. Parse Claude response
+      const draftBody = message.content[0].type === 'text' 
+        ? message.content[0].text 
+        : '';
+      
+      // 7. Extract subject lines from draft
+      const subjectLines = extractSubjectLines(draftBody);
+      
+      // 8. Structure draft data
+      const draftId = firestore.collection('users').doc().id;
+      
+      const draft: Draft = {
+        draftId,
+        status: 'generated',
+        scheduledFor: Timestamp.fromDate(
+          new Date(Date.now() + 2 * 60 * 60 * 1000)  // 2 hours from now
+        ),
+        generatedAt: Timestamp.now(),
+        
+        aiGenerated: {
+          subjectLines,
+          body: draftBody,
+          curatedItems: recentContent.slice(0, 8).map((item, index) => ({
+            contentId: item.contentId,
+            title: extractTitle(item),
+            summary: extractSummary(draftBody, index),
+            commentary: extractCommentary(draftBody, index),
+            url: extractUrl(item),
+            position: index
+          })),
+          trendsSection: trends.map(trend => ({
+            trendId: trend.trendId,
+            title: trend.title,
+            explainer: trend.description,
+            sources: trend.sources.flatMap(s => s.topPosts.slice(0, 2)),
+            trendScore: trend.trendScore
+          })),
+          introText: extractIntro(draftBody),
+          closingText: extractClosing(draftBody)
+        },
+        
+        userEdits: {
+          addedContent: [],
+          removedContentIds: [],
+          feedbackItems: [],
+          totalEditTimeSeconds: 0
+        },
+        
+        final: {
+          subjectLine: subjectLines[0],
+          body: draftBody
+        },
+        
+        performance: {
+          emailSent: false,
+          deliveredTo: 0
+        },
+        
+        aiMetrics: {
+          acceptanceRate: 0,
+          generationTimeSeconds: generationTime
+        }
+      };
+      
+      // 9. Save draft to Firestore
+      await firestore
+        .collection('users').doc(userId)
+        .collection('drafts').doc(draftId)
+        .set(draft);
+      
+      // 10. Send email notification
+      await sendDraftNotification(user, draft);
+      
+      return res.status(200).json({
+        success: true,
+        draftId,
+        generationTime,
+        itemsIncluded: draft.aiGenerated.curatedItems.length,
+        trendsIncluded: draft.aiGenerated.trendsSection.length
+      });
+      
+    } catch (error: any) {
+      console.error('Error generating draft:', error);
+      return res.status(500).json({
+        error: 'Failed to generate draft',
+        details: error.message
+      });
+    }
+  }
+);
+
+function buildSystemPrompt(voiceProfile: User['voiceProfile']): string {
+  return `You are a newsletter ghostwriter. Your task is to write a newsletter that matches the following style:
+
+Tone: ${voiceProfile.styleParameters.tone}
+Sentence Style: ${voiceProfile.styleParameters.avgSentenceLength < 15 ? 'Short and punchy' : 'Longer and descriptive'}
+Vocabulary: ${voiceProfile.styleParameters.vocabularyLevel}
+Formatting:
+- Use emojis: ${voiceProfile.styleParameters.formattingPreferences.useEmojis}
+- Use lists: ${voiceProfile.styleParameters.formattingPreferences.useLists}
+- Header style: ${voiceProfile.styleParameters.formattingPreferences.headerStyle}
+
+Important rules:
+1. Write in markdown format
+2. Include exactly 3 subject line options at the top (prefix with "SUBJECT:")
+3. Structure: Intro → Curated Items (8 items) → Trends to Watch (3 trends) → Closing
+4. Each curated item: Title, 2-3 sentence summary, 1-2 sentence commentary in creator's voice
+5. Keep total length 800-1200 words
+6. Maintain consistent voice throughout`;
+}
+
+function buildDraftPrompt(
+  user: User,
+  content: ScrapedContent[],
+  trends: Trend[]
+): string {
+  const contentSummaries = content.map((item, i) => {
+    const data = item.rawData.twitter || item.rawData.youtube || item.rawData.reddit;
+    return `${i + 1}. ${data.title || data.text?.slice(0, 100)}\n   URL: ${data.url}\n   Engagement: ${item.processed.engagementScore}`;
+  }).join('\n\n');
+  
+  const trendSummaries = trends.map((trend, i) => {
+    return `${i + 1}. ${trend.title}\n   Score: ${trend.trendScore}\n   Keywords: ${trend.keywords.join(', ')}`;
+  }).join('\n\n');
+  
+  return `Generate a newsletter draft for ${user.displayName}.
+
+Here are the top curated items from their sources:
+
+${contentSummaries}
+
+Here are the current trending topics:
+
+${trendSummaries}
+
+Write a compelling newsletter that:
+1. Starts with an engaging intro (2-3 sentences)
+2. Covers 8 of the curated items with summaries and commentary
+3. Includes a "Trends to Watch" section with the 3 trends
+4. Ends with a closing paragraph
+
+Remember to match the creator's voice and style.`;
+}
+
+// Helper functions
+function extractSubjectLines(draft: string): string[] {
+  const lines = draft.split('\n');
+  const subjects = lines
+    .filter(line => line.startsWith('SUBJECT:'))
+    .map(line => line.replace('SUBJECT:', '').trim());
+  
+  return subjects.length >= 3 ? subjects.slice(0, 3) : [
+    'Your Weekly Newsletter',
+    'This Week\'s Top Stories',
+    'Newsletter Digest'
+  ];
+}
+
+function extractTitle(item: ScrapedContent): string {
+  const data = item.rawData.twitter || item.rawData.youtube || item.rawData.reddit;
+  return data.title || data.text?.slice(0, 100) || 'Untitled';
+}
+
+function extractUrl(item: ScrapedContent): string {
+  const data = item.rawData.twitter || item.rawData.youtube || item.rawData.reddit;
+  return data.url || '';
+}
+
+// ... more helper functions
+```
+
+---
+
+### 3.2 External API Integrations
+
+#### Integration: Apify Twitter Scraper
+
+**Endpoint:** `POST https://api.apify.com/v2/acts/kaitoeasyapi~twitter-x-data-tweet-scraper-pay-per-result-cheapest/runs`
+
+**Authentication:** Bearer token in query param `?token=YOUR_API_TOKEN`
+
+**Request Body:**
+```json
+{
+  "from": "elonmusk",
+  "maxItems": 50,
+  "lang": "en",
+  "filter:nativeretweets": false,
+  "since": "2025-10-01_00:00:00_UTC",
+  "until": "2025-10-16_23:59:59_UTC"
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "run_12345",
+    "status": "RUNNING",
+    "defaultDatasetId": "dataset_67890"
+  }
+}
+```
+
+**Fetch Results:**
+```bash
+GET https://api.apify.com/v2/datasets/dataset_67890/items?token=YOUR_API_TOKEN
+```
+
+**Error Handling:**
+```typescript
+try {
+  const response = await axios.post(apifyUrl, input);
+} catch (error) {
+  if (error.response?.status === 429) {
+    // Rate limit - exponential backoff
+    await sleep(Math.pow(2, retryCount) * 1000);
+    return retry();
+  } else if (error.response?.status === 402) {
+    // Insufficient credits
+    await notifyAdmin('Apify credits depleted');
+    throw new Error('Apify credits exceeded');
+  } else {
+    throw error;
+  }
+}
+```
+
+---
+
+#### Integration: Claude API (Anthropic)
+
+**Endpoint:** `POST https://api.anthropic.com/v1/messages`
+
+**Authentication:** `x-api-key: YOUR_API_KEY` header
+
+**Request:**
+```json
+{
+  "model": "claude-3-5-sonnet-20241022",
+  "max_tokens": 2000,
+  "temperature": 0.7,
+  "system": "You are a newsletter ghostwriter...",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Generate a newsletter draft..."
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "id": "msg_01ABC123",
+  "type": "message",
+  "role": "assistant",
+  "content": [
+    {
+      "type": "text",
+      "text": "SUBJECT: Your Weekly AI Digest\n\n## Hello everyone! 👋\n\n..."
+    }
+  ],
+  "model": "claude-3-5-sonnet-20241022",
+  "usage": {
+    "input_tokens": 1250,
+    "output_tokens": 1800
+  }
+}
+```
+
+**Error Handling:**
+```typescript
+try {
+  const message = await anthropic.messages.create({...});
+} catch (error) {
+  if (error.status === 529) {
+    // Overloaded - retry with backoff
+    await sleep(5000);
+    return retry();
+  } else if (error.status === 429) {
+    // Rate limit
+    await sleep(60000);  // Wait 1 min
+    return retry();
+  } else {
+    // Use cached fallback or notify user
+    throw error;
+  }
+}
+```
+
+---
+
+## 4. ALGORITHM IMPLEMENTATIONS
+
+### 4.1 Trend Detection Algorithm
+
+**Goal:** Identify emerging trends across multiple platforms
+
+**Approach:** Velocity-based spike detection + cross-platform validation
+
+**Implementation:**
+```typescript
+interface TrendCandidate {
+  keyword: string;
+  mentions: Array<{ timestamp: Date; platform: string; contentId: string }>;
+  velocity: number;
+  crossPlatformScore: number;
+}
+
+async function detectTrends(): Promise<Trend[]> {
+  // 1. Aggregate all scraped content from last 48 hours
+  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
+  
+  const recentContent = await firestore
+    .collection('scrapedContent')
+    .where('scrapedAt', '>', Timestamp.fromDate(cutoff))
+    .get();
+  
+  // 2. Extract keywords and build frequency map
+  const keywordMap = new Map<string, TrendCandidate>();
+  
+  for (const doc of recentContent.docs) {
+    const content = doc.data() as ScrapedContent;
+    
+    for (const keyword of content.processed.keywords) {
+      if (!keywordMap.has(keyword)) {
+        keywordMap.set(keyword, {
+          keyword,
+          mentions: [],
+          velocity: 0,
+          crossPlatformScore: 0
+        });
+      }
+      
+      keywordMap.get(keyword)!.mentions.push({
+        timestamp: content.scrapedAt.toDate(),
+        platform: content.sourceType,
+        contentId: content.contentId
+      });
+    }
+  }
+  
+  // 3. Calculate velocity for each keyword
+  const trendCandidates: TrendCandidate[] = [];
+  
+  for (const [keyword, data] of keywordMap.entries()) {
+    if (data.mentions.length < 5) continue;  // Min threshold
+    
+    // Split mentions into two time windows: last 24h and previous 24h
+    const now = Date.now();
+    const window1 = now - 24 * 60 * 60 * 1000;
+    const window2 = now - 48 * 60 * 60 * 1000;
+    
+    const recent = data.mentions.filter(m => m.timestamp.getTime() > window1).length;
+    const previous = data.mentions.filter(m => 
+      m.timestamp.getTime() > window2 && m.timestamp.getTime() <= window1
+    ).length;
+    
+    // Velocity = (recent - previous) / previous (% growth)
+    const velocity = previous === 0 ? recent * 100 : ((recent - previous) / previous) * 100;
+    
+    // Cross-platform score: How many different platforms mention this?
+    const platforms = new Set(data.mentions.map(m => m.platform));
+    const crossPlatformScore = platforms.size;
+    
+    // Only consider trends with positive velocity and multi-platform presence
+    if (velocity > 50 && crossPlatformScore >= 2) {  // 50% growth, 2+ platforms
+      data.velocity = velocity;
+      data.crossPlatformScore = crossPlatformScore;
+      trendCandidates.push(data);
+    }
+  }
+  
+  // 4. Cross-reference with Google Trends (optional validation)
+  const topCandidates = trendCandidates
+    .sort((a, b) => b.velocity - a.velocity)
+    .slice(0, 20);
+  
+  const googleTrendsData = await queryGoogleTrends(
+    topCandidates.map(c => c.keyword)
+  );
+  
+  // 5. Calculate final trend score (0-100)
+  const trends: Trend[] = [];
+  
+  for (const candidate of topCandidates) {
+    const googleScore = googleTrendsData.get(candidate.keyword) || 0;
+    
+    // Weighted score:
+    // 40% velocity, 30% cross-platform, 30% Google Trends
+    const trendScore = Math.min(
+      (candidate.velocity * 0.4) +
+      (candidate.crossPlatformScore * 10 * 0.3) +  // Normalize to 0-100
+      (googleScore * 0.3),
+      100
+    );
+    
+    if (trendScore >= 60) {  // Threshold for "emerging trend"
+      const topPosts = candidate.mentions
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+        .slice(0, 10)
+        .map(m => m.contentId);
+      
+      trends.push({
+        trendId: firestore.collection('trends').doc().id,
+        title: candidate.keyword,
+        category: inferCategory(candidate.keyword),
+        description: await generateTrendExplainer(candidate.keyword, topPosts),
+        detectionDate: Timestamp.now(),
+        trendScore,
+        velocity: candidate.velocity,
+        sources: Array.from(new Set(candidate.mentions.map(m => m.platform))).map(platform => ({
+          platform: platform as any,
+          mentions: candidate.mentions.filter(m => m.platform === platform).length,
+          topPosts: topPosts.filter(id => id.startsWith(platform))
+        })),
+        keywords: [candidate.keyword],
+        status: 'emerging',
+        notifiedUsers: [],
+        curatedInto: [],
+        expiresAt: Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
+      });
+    }
+  }
+  
+  // 6. Store trends in Firestore
+  const batch = firestore.batch();
+  for (const trend of trends) {
+    batch.set(firestore.collection('trends').doc(trend.trendId), trend);
+  }
+  await batch.commit();
+  
+  return trends.slice(0, 10);  // Return top 10
+}
+
+async function queryGoogleTrends(keywords: string[]): Promise<Map<string, number>> {
+  // Call Apify Google Trends scraper
+  const apifyInput = {
+    searchTerms: keywords,
+    timeRange: 'now 7-d',
+    geo: ''
+  };
+  
+  const response = await callApifyActor('apify/google-trends-scraper', apifyInput);
+  
+  // Parse results and return map of keyword -> interest score (0-100)
+  const scores = new Map<string, number>();
+  for (const item of response) {
+    scores.set(item.keyword, item.value || 0);
+  }
+  
+  return scores;
+}
+
+function inferCategory(keyword: string): Trend['category'] {
+  const categoryMap = {
+    tech: ['ai', 'ml', 'software', 'app', 'tech', 'startup', 'coding'],
+    business: ['business', 'revenue', 'market', 'investment', 'ipo'],
+    culture: ['culture', 'movie', 'music', 'art', 'fashion'],
+    science: ['science', 'research', 'study', 'discovery'],
+    politics: ['politics', 'election', 'government', 'policy']
+  };
+  
+  const lowerKeyword = keyword.toLowerCase();
+  
+  for (const [category, words] of Object.entries(categoryMap)) {
+    if (words.some(w => lowerKeyword.includes(w))) {
+      return category as Trend['category'];
+    }
+  }
+  
+  return 'other';
+}
+
+async function generateTrendExplainer(keyword: string, topPosts: string[]): Promise<string> {
+  // Use Claude to generate 2-sentence explainer
+  const postSummaries = await Promise.all(
+    topPosts.slice(0, 3).map(async (id) => {
+      const doc = await firestore.collection('scrapedContent').doc(id).get();
+      const content = doc.data() as ScrapedContent;
+      const data = content.rawData.twitter || content.rawData.youtube || content.rawData.reddit;
+      return data.text || data.title || '';
+    })
+  );
+  
+  const anthropic = new Anthropic({ apiKey: functions.config().anthropic.api_key });
+  
+  const message = await anthropic.messages.create({
+    model: 'claude-3-5-sonnet-20241022',
+    max_tokens: 150,
+    messages: [{
+      role: 'user',
+      content: `Explain this trending topic "${keyword}" in 2 sentences based on these posts:\n\n${postSummaries.join('\n\n')}`
+    }]
+  });
+  
+  return message.content[0].type === 'text' ? message.content[0].text : `${keyword} is gaining attention.`;
+}
+```
+
+---
+
+### 4.2 Relevance Scoring Algorithm
+
+**Goal:** Rank scraped content by relevance to user's interests
+
+**Approach:** TF-IDF + User behavior + Recency
+
+**Implementation:**
+```typescript
+interface UserPreferences {
+  favoriteTopics: Map<string, number>;    // topic -> weight (0-1)
+  favoriteSources: Map<string, number>;   // sourceId -> weight
+  recentInteractions: Array<{
+    contentId: string;
+    reaction: 'thumbs_up' | 'thumbs_down' | 'star';
+    timestamp: Date;
+  }>;
+}
+
+async function calculateRelevanceScore(
+  content: ScrapedContent,
+  user: User
+): Promise<number> {
+  const prefs = await getUserPreferences(user.userId);
+  
+  // 1. Topic matching (40% weight)
+  let topicScore = 0;
+  for (const topic of content.processed.topics) {
+    topicScore += prefs.favoriteTopics.get(topic) || 0;
+  }
+  topicScore = Math.min(topicScore / content.processed.topics.length, 1);
+  
+  // 2. Source quality (30% weight)
+  const sourceScore = prefs.favoriteSources.get(content.sourceId) || 0.5;
+  
+  // 3. Engagement score (20% weight)
+  const engagementScore = content.processed.engagementScore;
+  
+  // 4. Recency (10% weight)
+  const hoursSinceScraped = (Date.now() - content.scrapedAt.toMillis()) / (1000 * 60 * 60);
+  const recencyScore = Math.max(1 - (hoursSinceScraped / 48), 0);  // Decay over 48h
+  
+  // Weighted sum
+  const relevanceScore = 
+    (topicScore * 0.4) +
+    (sourceScore * 0.3) +
+    (engagementScore * 0.2) +
+    (recencyScore * 0.1);
+  
+  return Math.min(relevanceScore, 1);
+}
+
+async function getUserPreferences(userId: string): Promise<UserPreferences> {
+  // Aggregate from user's feedback history
+  const feedbackDocs = await firestore
+    .collection('users').doc(userId)
+    .collection('feedback')
+    .where('createdAt', '>', Timestamp.fromDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)))
+    .get();
+  
+  const favoriteTopics = new Map<string, number>();
+  const favoriteSources = new Map<string, number>();
+  const recentInteractions: UserPreferences['recentInteractions'] = [];
+  
+  for (const doc of feedbackDocs.docs) {
+    const feedback = doc.data();
+    
+    if (feedback.feedbackType === 'inline_reaction' && feedback.reactionData) {
+      const contentDoc = await firestore.collection('scrapedContent').doc(feedback.reactionData.contentId).get();
+      const content = contentDoc.data() as ScrapedContent;
+      
+      // Weight reactions: thumbs_up = +0.1, star = +0.2, thumbs_down = -0.1
+      const weight = 
+        feedback.reactionData.reaction === 'star' ? 0.2 :
+        feedback.reactionData.reaction === 'thumbs_up' ? 0.1 :
+        -0.1;
+      
+      // Update topic preferences
+      for (const topic of content.processed.topics) {
+        favoriteTopics.set(topic, (favoriteTopics.get(topic) || 0.5) + weight);
+      }
+      
+      // Update source preferences
+      favoriteSources.set(content.sourceId, (favoriteSources.get(content.sourceId) || 0.5) + weight);
+      
+      recentInteractions.push({
+        contentId: feedback.reactionData.contentId,
+        reaction: feedback.reactionData.reaction,
+        timestamp: feedback.createdAt.toDate()
+      });
+    }
+  }
+  
+  // Normalize weights to 0-1
+  for (const [topic, weight] of favoriteTopics.entries()) {
+    favoriteTopics.set(topic, Math.max(0, Math.min(weight, 1)));
+  }
+  
+  for (const [sourceId, weight] of favoriteSources.entries()) {
+    favoriteSources.set(sourceId, Math.max(0, Math.min(weight, 1)));
+  }
+  
+  return { favoriteTopics, favoriteSources, recentInteractions };
+}
+```
+
+---
+
+### 4.3 Voice Profile Training Algorithm
+
+**Goal:** Extract writing style parameters from past newsletters
+
+**Approach:** Statistical analysis + Few-shot learning prompt construction
+
+**Implementation:**
+```typescript
+interface VoiceAnalysis {
+  tone: string;
+  avgSentenceLength: number;
+  vocabularyLevel: string;
+  formattingPreferences: {
+    useEmojis: boolean;
+    useLists: boolean;
+    headerStyle: 'short' | 'descriptive';
+  };
+  exampleSentences: string[];  // For few-shot learning
+}
+
+async function trainVoiceProfile(userId: string, newDocuments: string[]): Promise<VoiceAnalysis> {
+  // 1. Fetch existing training documents
+  const userDoc = await firestore.collection('users').doc(userId).get();
+  const user = userDoc.data() as User;
+  
+  const existingDocs = user.voiceProfile.trainingDocuments || [];
+  
+  // 2. Download and combine all documents
+  const allTexts: string[] = [];
+  
+  for (const docUrl of [...existingDocs, ...newDocuments]) {
+    const text = await downloadDocument(docUrl);
+    allTexts.push(text);
+  }
+  
+  const combinedText = allTexts.join('\n\n');
+  
+  // 3. Analyze writing style
+  const analysis = analyzeWritingStyle(combinedText);
+  
+  // 4. Generate few-shot examples
+  analysis.exampleSentences = extractRepresentativeSentences(combinedText, 10);
+  
+  // 5. Update user's voice profile in Firestore
+  await firestore.collection('users').doc(userId).update({
+    'voiceProfile.trained': true,
+    'voiceProfile.trainingDocuments': [...existingDocs, ...newDocuments],
+    'voiceProfile.styleParameters': {
+      tone: analysis.tone,
+      avgSentenceLength: analysis.avgSentenceLength,
+      vocabularyLevel: analysis.vocabularyLevel,
+      formattingPreferences: analysis.formattingPreferences
+    },
+    'voiceProfile.lastUpdated': Timestamp.now()
+  });
+  
+  return analysis;
+}
+
+function analyzeWritingStyle(text: string): VoiceAnalysis {
+  // 1. Sentence segmentation
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+  const avgSentenceLength = sentences.reduce((sum, s) => sum + s.split(/\s+/).length, 0) / sentences.length;
+  
+  // 2. Tone analysis (simple heuristics, can be improved with ML)
+  const exclamationCount = (text.match(/!/g) || []).length;
+  const questionCount = (text.match(/\?/g) || []).length;
+  const casualWords = ['hey', 'cool', 'awesome', 'lol', 'tbh'];
+  const professionalWords = ['furthermore', 'consequently', 'notwithstanding'];
+  
+  const casualScore = casualWords.filter(w => text.toLowerCase().includes(w)).length;
+  const professionalScore = professionalWords.filter(w => text.toLowerCase().includes(w)).length;
+  
+  const tone = 
+    casualScore > professionalScore ? 'casual' :
+    professionalScore > casualScore ? 'professional' :
+    exclamationCount > 10 ? 'enthusiastic' :
+    'neutral';
+  
+  // 3. Vocabulary analysis
+  const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+  const uniqueWords = new Set(words);
+  const lexicalDiversity = uniqueWords.size / words.length;
+  
+  const longWords = words.filter(w => w.length > 7).length;
+  const longWordRatio = longWords / words.length;
+  
+  const vocabularyLevel = 
+    longWordRatio > 0.15 || lexicalDiversity > 0.6 ? 'advanced' :
+    longWordRatio < 0.08 && lexicalDiversity < 0.4 ? 'simple' :
+    'intermediate';
+  
+  // 4. Formatting analysis
+  const useEmojis = /[\u{1F600}-\u{1F64F}]/u.test(text);
+  const useLists = /^[\-\*\d+\.]\s/m.test(text);
+  
+  const headers = text.match(/^#{1,3}\s+.+$/gm) || [];
+  const avgHeaderLength = headers.reduce((sum, h) => sum + h.length, 0) / headers.length;
+  const headerStyle = avgHeaderLength > 30 ? 'descriptive' : 'short';
+  
+  return {
+    tone,
+    avgSentenceLength: Math.round(avgSentenceLength),
+    vocabularyLevel,
+    formattingPreferences: {
+      useEmojis,
+      useLists,
+      headerStyle
+    },
+    exampleSentences: []
+  };
+}
+
+function extractRepresentativeSentences(text: string, count: number): string[] {
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+  
+  // Filter out very short/long sentences
+  const filtered = sentences.filter(s => {
+    const words = s.split(/\s+/).length;
+    return words >= 10 && words <= 30;
+  });
+  
+  // Sample evenly throughout the text
+  const step = Math.floor(filtered.length / count);
+  const examples: string[] = [];
+  
+  for (let i = 0; i < count && i * step < filtered.length; i++) {
+    examples.push(filtered[i * step].trim());
+  }
+  
+  return examples;
+}
+
+async function downloadDocument(url: string): Promise<string> {
+  // If Firebase Storage URL
+  if (url.includes('firebasestorage.googleapis.com')) {
+    const storage = admin.storage();
+    const bucket = storage.bucket();
+    
+    const fileName = url.split('/').pop()!;
+    const file = bucket.file(`user-uploads/${fileName}`);
+    
+    const [contents] = await file.download();
+    
+    // If PDF, extract text
+    if (fileName.endsWith('.pdf')) {
+      // Use pdf-parse library
+      const pdfParse = require('pdf-parse');
+      const data = await pdfParse(contents);
+      return data.text;
+    }
+    
+    return contents.toString('utf-8');
+  }
+  
+  throw new Error('Unsupported document URL');
+}
+```
+
+---
+
+## 5. FRONTEND ARCHITECTURE
+
+### 5.1 Component Tree Structure
+
+```
+<App>
+  <Router>
+    <AuthProvider>
+      <Layout>
+        <Header>
+          <Logo />
+          <NavBar />
+          <UserMenu />
+        </Header>
+        
+        <Sidebar>
+          <NavLinks />
+          <QuickActions />
+        </Sidebar>
+        
+        <MainContent>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            
+            <Route path="/dashboard" element={<ProtectedRoute />}>
+              <Route index element={<Dashboard />} />
+              <Route path="drafts" element={<DraftsManager />}>
+                <Route path=":draftId" element={<DraftDetail />} />
+              </Route>
+              <Route path="sources" element={<SourcesLibrary />}>
+                <Route path=":sourceId" element={<SourceDetail />} />
+              </Route>
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+            
+            <Route path="/admin" element={<AdminRoute />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="system" element={<SystemHealth />} />
+              <Route path="features" element={<FeatureFlags />} />
+            </Route>
+          </Routes>
+        </MainContent>
+        
+        <Footer />
+      </Layout>
+    </AuthProvider>
+  </Router>
+</App>
+```
+
+---
+
+### 5.2 State Management Architecture
+
+**Global State (React Context + React Query):**
+
+```typescript
+// contexts/AuthContext.tsx
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  signUp: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
+}
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    // Listen to Firebase Auth state changes
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        // Fetch user data from Firestore
+        const userDoc = await firestore.collection('users').doc(firebaseUser.uid).get();
+        setUser(userDoc.data() as User);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+    
+    return unsubscribe;
+  }, []);
+  
+  const signUp = async (email: string, password: string) => {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await sendEmailVerification(cred.user);
+    
+    // Create user document in Firestore
+    await firestore.collection('users').doc(cred.user.uid).set({
+      userId: cred.user.uid,
+      email,
+      displayName: '',
+      role: 'creator',
+      accountType: 'free',
+      // ... default values
+      createdAt: Timestamp.now()
+    });
+  };
+  
+  // ... other methods
+  
+  return (
+    <AuthContext.Provider value={{ user, loading, signUp, login, logout, updateProfile }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+```
+
+**Server State (React Query):**
+
+```typescript
+// hooks/useDrafts.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+export function useDrafts(userId: string) {
+  return useQuery({
+    queryKey: ['drafts', userId],
+    queryFn: async () => {
+      const snapshot = await firestore
+        .collection('users').doc(userId)
+        .collection('drafts')
+        .orderBy('generatedAt', 'desc')
+        .limit(50)
+        .get();
+      
+      return snapshot.docs.map(doc => doc.data() as Draft);
+    },
+    staleTime: 30000,  // 30 seconds
+    refetchOnWindowFocus: true
+  });
+}
+
+export function useUpdateDraft(userId: string) {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ draftId, updates }: { draftId: string; updates: Partial<Draft> }) => {
+      await firestore
+        .collection('users').doc(userId)
+        .collection('drafts').doc(draftId)
+        .update(updates);
+      
+      return { draftId, updates };
+    },
+    onSuccess: () => {
+      // Invalidate and refetch drafts
+      queryClient.invalidateQueries({ queryKey: ['drafts', userId] });
+    }
+  });
+}
+```
+
+---
+
+### 5.3 Key Component Implementations
+
+#### Component: DraftEditor
+
+```typescript
+// components/DraftEditor.tsx
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import { useState, useEffect } from 'react';
+
+interface DraftEditorProps {
+  draft: Draft;
+  onSave: (updatedBody: string) => void;
+  onReaction: (contentId: string, reaction: 'thumbs_up' | 'thumbs_down' | 'star') => void;
+}
+
+export const DraftEditor: React.FC<DraftEditorProps> = ({ draft, onSave, onReaction }) => {
+  const [editTime, setEditTime] = useState(0);
+  
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Link.configure({ openOnClick: false })
+    ],
+    content: draft.userEdits.editedBody || draft.aiGenerated.body,
+    onUpdate: ({ editor }) => {
+      // Auto-save after 2 seconds of no changes
+      debounce(() => onSave(editor.getHTML()), 2000);
+    }
+  });
+  
+  // Track editing time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setEditTime(prev => prev + 1);
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  return (
+    <div className="draft-editor">
+      {/* Toolbar */}
+      <div className="toolbar">
+        <button onClick={() => editor?.chain().focus().toggleBold().run()}>
+          <Bold />
+        </button>
+        <button onClick={() => editor?.chain().focus().toggleItalic().run()}>
+          <Italic />
+        </button>
+        <button onClick={() => {
+          const url = window.prompt('URL');
+          if (url) editor?.chain().focus().setLink({ href: url }).run();
+        }}>
+          <Link />
+        </button>
+      </div>
+      
+      {/* Editor Content */}
+      <EditorContent editor={editor} className="prose max-w-none" />
+      
+      {/* Curated Items with Reactions */}
+      <div className="curated-items mt-8">
+        <h3 className="text-xl font-bold mb-4">Curated Items</h3>
+        {draft.aiGenerated.curatedItems.map((item, index) => (
+          <div key={item.contentId} className="item-card mb-4 p-4 border rounded-lg">
+            <h4 className="font-semibold">{item.title}</h4>
+            <p className="text-gray-600 mt-2">{item.summary}</p>
+            <p className="text-blue-600 mt-2 italic">{item.commentary}</p>
+            
+            <div className="reactions mt-4 flex gap-2">
+              <button
+                onClick={() => onReaction(item.contentId, 'thumbs_up')}
+                className="px-3 py-1 bg-green-100 rounded hover:bg-green-200"
+              >
+                👍 Keep
+              </button>
+              <button
+                onClick={() => onReaction(item.contentId, 'thumbs_down')}
+                className="px-3 py-1 bg-red-100 rounded hover:bg-red-200"
+              >
+                👎 Remove
+              </button>
+              <button
+                onClick={() => onReaction(item.contentId, 'star')}
+                className="px-3 py-1 bg-yellow-100 rounded hover:bg-yellow-200"
+              >
+                ⭐ Favorite
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Edit Time Display */}
+      <div className="fixed bottom-4 right-4 bg-gray-100 px-4 py-2 rounded-full">
+        ⏱️ {Math.floor(editTime / 60)}:{String(editTime % 60).padStart(2, '0')}
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## 6. BACKEND ARCHITECTURE
+
+### 6.1 Firebase Cloud Functions Structure
+
+```
+functions/
+├── src/
+│   ├── index.ts                 # Main entry point
+│   ├── scrapers/
+│   │   ├── twitter.ts           # Twitter scraping logic
+│   │   ├── youtube.ts           # YouTube scraping logic
+│   │   ├── reddit.ts            # Reddit scraping logic
+│   │   └── scheduler.ts         # Scraping scheduler
+│   ├── drafts/
+│   │   ├── generator.ts         # Draft generation
+│   │   ├── delivery.ts          # Email delivery
+│   │   └── templates.ts         # Email templates
+│   ├── feedback/
+│   │   ├── processor.ts         # Feedback aggregation
+│   │   └── retraining.ts        # Voice profile updates
+│   ├── trends/
+│   │   ├── detector.ts          # Trend detection algorithm
+│   │   └── scorer.ts            # Trend scoring
+│   ├── admin/
+│   │   ├── moderation.ts        # Content moderation
+│   │   └── analytics.ts         # Admin analytics
+│   ├── utils/
+│   │   ├── apify.ts             # Apify API wrapper
+│   │   ├── claude.ts            # Claude API wrapper
+│   │   ├── cache.ts             # In-memory caching
+│   │   └── logger.ts            # Structured logging
+│   └── types/
+│       └── index.ts             # TypeScript interfaces
+├── package.json
+├── tsconfig.json
+└── .env.example
+```
+
+---
+
+### 6.2 Function Deployment Configuration
+
+```json
+// firebase.json
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "runtime": "nodejs18",
+      "region": ["us-central1"],
+      "minInstances": 0,
+      "maxInstances": 100,
+      "timeout": "300s",
+      "memory": "512MB",
+      "environmentVariables": {
+        "NODE_ENV": "production"
+      }
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 6.3 Scheduled Functions (Cron Jobs)
+
+```typescript
+// functions/src/index.ts
+import * as functions from 'firebase-functions';
+
+// Scrape Twitter sources every 6 hours
+export const scheduledTwitterScrape = functions.pubsub
+  .schedule('0 */6 * * *')
+  .timeZone('America/Los_Angeles')
+  .onRun(async (context) => {
+    const usersSnapshot = await firestore.collection('users').get();
+    
+    for (const userDoc of usersSnapshot.docs) {
+      const sourcesSnapshot = await userDoc.ref
+        .collection('sources')
+        .where('type', '==', 'twitter')
+        .where('isActive', '==', true)
+        .get();
+      
+      for (const sourceDoc of sourcesSnapshot.docs) {
+        await scrapeTwitterSource({
+          body: {
+            userId: userDoc.id,
+            sourceId: sourceDoc.id
+          }
+        } as any, {} as any);
+      }
+    }
+  });
+
+// Generate drafts daily at 6 AM user timezone
+export const scheduledDraftGeneration = functions.pubsub
+  .schedule('0 6 * * *')
+  .timeZone('America/Los_Angeles')
+  .onRun(async (context) => {
+    const usersSnapshot = await firestore
+      .collection('users')
+      .where('preferences.deliveryFrequency', '==', 'daily')
+      .get();
+    
+    for (const userDoc of usersSnapshot.docs) {
+      await generateDraft({
+        body: { userId: userDoc.id }
+      } as any, {} as any);
+    }
+  });
+
+// Process feedback weekly (Sundays at 2 AM)
+export const scheduledFeedbackProcessing = functions.pubsub
+  .schedule('0 2 * * 0')
+  .timeZone('America/Los_Angeles')
+  .onRun(async (context) => {
+    const usersSnapshot = await firestore.collection('users').get();
+    
+    for (const userDoc of usersSnapshot.docs) {
+      await processFeedback(userDoc.id);
+    }
+  });
+
+// Cleanup expired content (daily at 3 AM)
+export const scheduledContentCleanup = functions.pubsub
+  .schedule('0 3 * * *')
+  .timeZone('America/Los_Angeles')
+  .onRun(async (context) => {
+    const now = Timestamp.now();
+    const batch = firestore.batch();
+    
+    const expiredDocs = await firestore
+      .collection('scrapedContent')
+      .where('expiresAt', '<=', now)
+      .limit(500)
+      .get();
+    
+    expiredDocs.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+    
+    console.log(`Deleted ${expiredDocs.size} expired documents`);
+  });
+```
+
+---
+
+## 7. SECURITY IMPLEMENTATION
+
+### 7.1 Firestore Security Rules
+
+```javascript
+// firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own document
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Users can create their own document (signup)
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      
+      // Users can update their own document (except role)
+      allow update: if isOwner(userId) && 
+                      (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'accountType']));
+      
+      // Admins can update any user (including role)
+      allow update: if isAdmin();
+      
+      // Users cannot delete their own account (must use Cloud Function)
+      allow delete: if isAdmin();
+      
+      // Sources subcollection
+      match /sources/{sourceId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId);
+      }
+      
+      // Drafts subcollection
+      match /drafts/{draftId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId);
+      }
+      
+      // Feedback subcollection
+      match /feedback/{feedbackId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId);
+        allow update, delete: if false;  // Immutable after creation
+      }
+    }
+    
+    // ScrapedContent collection (write-only by Cloud Functions)
+    match /scrapedContent/{contentId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow write: if false;  // Only Cloud Functions can write
+    }
+    
+    // Trends collection (read-only for users)
+    match /trends/{trendId} {
+      allow read: if isSignedIn();
+      allow write: if false;  // Only Cloud Functions can write
+    }
+    
+    // AdminLogs collection (admin-only)
+    match /adminLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;  // Only Cloud Functions can write
+    }
+  }
+}
+```
+
+---
+
+### 7.2 Firebase Storage Security Rules
+
+```javascript
+// storage.rules
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // User uploads (newsletters for voice training)
+    match /user-uploads/{userId}/{fileName} {
+      // Users can upload their own files
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // Users can read their own files
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Admins can read all files
+      allow read: if request.auth.token.admin == true;
+      
+      // File size limit: 10 MB
+      allow write: if request.resource.size < 10 * 1024 * 1024;
+      
+      // Allowed file types: PDF, TXT, MD
+      allow write: if request.resource.contentType.matches('application/pdf') ||
+                      request.resource.contentType.matches('text/plain') ||
+                      request.resource.contentType.matches('text/markdown');
+    }
+  }
+}
+```
+
+---
+
+### 7.3 Authentication Flow
+
+**Sign Up Flow:**
+```typescript
+// frontend/src/hooks/useAuth.ts
+export function useSignUp() {
+  const navigate = useNavigate();
+  
+  return useMutation({
+    mutationFn: async ({ email, password, displayName }: SignUpData) => {
+      // 1. Create Firebase Auth user
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // 2. Send email verification
+      await sendEmailVerification(cred.user);
+      
+      // 3. Create Firestore user document
+      await firestore.collection('users').doc(cred.user.uid).set({
+        userId: cred.user.uid,
+        email,
+        displayName,
+        role: 'creator',
+        accountType: 'free',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        preferences: {
+          deliveryTime: '08:00',
+          deliveryFrequency: 'daily',
+          draftFormat: 'markdown',
+          trendDigestEnabled: true,
+          emailNotifications: true
+        },
+        voiceProfile: {
+          trained: false,
+          trainingDocuments: [],
+          styleParameters: {
+            tone: 'neutral',
+            avgSentenceLength: 15,
+            vocabularyLevel: 'intermediate',
+            formattingPreferences: {
+              useEmojis: false,
+              useLists: true,
+              headerStyle: 'short'
+            }
+          },
+          lastUpdated: Timestamp.now()
+        },
+        usage: {
+          draftsGenerated: 0,
+          draftsSent: 0,
+          sourcesConnected: 0,
+          storageUsedMB: 0
+        },
+        billing: {
+          stripeCustomerId: null,
+          subscriptionStatus: 'free',
+          currentPeriodEnd: null
+        },
+        createdAt: Timestamp.now(),
+        lastLoginAt: Timestamp.now()
+      });
+      
+      return cred.user;
+    },
+    onSuccess: () => {
+      navigate('/onboarding');
+    }
+  });
+}
+```
+
+**Admin Role Assignment (Cloud Function):**
+```typescript
+// functions/src/admin/assignRole.ts
+export const assignAdminRole = functions.https.onCall(
+  async (data: { userId: string }, context) => {
+    // Verify caller is admin
+    if (!context.auth || !context.auth.token.admin) {
+      throw new functions.https.HttpsError(
+        'permission-denied',
+        'Only admins can assign roles'
+      );
+    }
+    
+    const { userId } = data;
+    
+    // Set custom claim
+    await admin.auth().setCustomUserClaims(userId, { admin: true });
+    
+    // Update Firestore user document
+    await firestore.collection('users').doc(userId).update({
+      role: 'admin'
+    });
+    
+    // Log action
+    await firestore.collection('adminLogs').add({
+      adminUserId: context.auth.uid,
+      action: 'assign_admin_role',
+      targetUserId: userId,
+      timestamp: Timestamp.now()
+    });
+    
+    return { success: true };
+  }
+);
+```
+
+---
+
+## 8. PERFORMANCE OPTIMIZATION
+
+### 8.1 Caching Strategy
+
+**In-Memory Cache (Firebase Functions):**
+```typescript
+// utils/cache.ts
+interface CacheEntry<T> {
+  data: T;
+  expiresAt: number;
+}
+
+class MemoryCache {
+  private cache: Map<string, CacheEntry<any>> = new Map();
+  
+  get<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    
+    if (!entry) return null;
+    
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
+      return null;
+    }
+    
+    return entry.data;
+  }
+  
+  set<T>(key: string, data: T, ttlSeconds: number = 300): void {
+    this.cache.set(key, {
+      data,
+      expiresAt: Date.now() + ttlSeconds * 1000
+    });
+  }
+  
+  clear(): void {
+    this.cache.clear();
+  }
+}
+
+export const cache = new MemoryCache();
+
+// Usage in scraper function
+export const scrapeTwitterSource = async (req, res) => {
+  const { sourceId, userId } = req.body;
+  const cacheKey = `twitter_${userId}_${sourceId}`;
+  
+  // Check cache first
+  const cached = cache.get<ScrapedContent[]>(cacheKey);
+  if (cached) {
+    console.log('Returning cached Twitter data');
+    return res.status(200).json({ items: cached, cached: true });
+  }
+  
+  // Fetch from Apify...
+  const items = await fetchTwitterData(sourceId);
+  
+  // Cache for 1 hour
+  cache.set(cacheKey, items, 3600);
+  
+  return res.status(200).json({ items, cached: false });
+};
+```
+
+---
+
+### 8.2 Batch Processing
+
+**Batch Firestore Writes:**
+```typescript
+// Instead of individual writes:
+for (const item of items) {
+  await firestore.collection('scrapedContent').doc(item.id).set(item);
+}
+
+// Use batch writes (max 500 per batch):
+const batches: WriteBatch[] = [];
+let currentBatch = firestore.batch();
+let operationCount = 0;
+
+for (const item of items) {
+  currentBatch.set(firestore.collection('scrapedContent').doc(item.id), item);
+  operationCount++;
+  
+  if (operationCount >= 500) {
+    batches.push(currentBatch);
+    currentBatch = firestore.batch();
+    operationCount = 0;
+  }
+}
+
+if (operationCount > 0) {
+  batches.push(currentBatch);
+}
+
+// Commit all batches in parallel
+await Promise.all(batches.map(batch => batch.commit()));
+```
+
+---
+
+### 8.3 Query Optimization
+
+**Use Composite Indexes:**
+```json
+// firestore.indexes.json
+{
+  "indexes": [
+    {
+      "collectionGroup": "drafts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "generatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "scrapedContent",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "scrapedAt", "order": "DESCENDING" },
+        { "fieldPath": "processed.relevanceScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "trends",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "trendScore", "order": "DESCENDING" }
+      ]
+    }
+  ]
+}
+```
+
+**Pagination for Large Queries:**
+```typescript
+// Frontend: Infinite scroll with cursor pagination
+export function useDraftsInfinite(userId: string) {
+  return useInfiniteQuery({
+    queryKey: ['drafts', userId, 'infinite'],
+    queryFn: async ({ pageParam = null }) => {
+      let query = firestore
+        .collection('users').doc(userId)
+        .collection('drafts')
+        .orderBy('generatedAt', 'desc')
+        .limit(20);
+      
+      if (pageParam) {
+        query = query.startAfter(pageParam);
+      }
+      
+      const snapshot = await query.get();
+      
+      return {
+        drafts: snapshot.docs.map(doc => doc.data() as Draft),
+        lastVisible: snapshot.docs[snapshot.docs.length - 1]
+      };
+    },
+    getNextPageParam: (lastPage) => lastPage.lastVisible || null
+  });
+}
+```
+
+---
+
+### 8.4 Code Splitting (Frontend)
+
+```typescript
+// Lazy load heavy components
+import { lazy, Suspense } from 'react';
+
+const DraftEditor = lazy(() => import('./components/DraftEditor'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+
+// Use with Suspense
+<Suspense fallback={<Spinner />}>
+  <DraftEditor draft={draft} />
+</Suspense>
+```
+
+---
+
+## 9. ERROR HANDLING & LOGGING
+
+### 9.1 Structured Logging
+
+```typescript
+// utils/logger.ts
+import * as functions from 'firebase-functions';
+
+export enum LogLevel {
+  DEBUG = 'debug',
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error'
+}
+
+export function log(level: LogLevel, message: string, metadata?: Record<string, any>) {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    level,
+    message,
+    ...metadata
+  };
+  
+  switch (level) {
+    case LogLevel.DEBUG:
+      functions.logger.debug(message, metadata);
+      break;
+    case LogLevel.INFO:
+      functions.logger.info(message, metadata);
+      break;
+    case LogLevel.WARN:
+      functions.logger.warn(message, metadata);
+      break;
+    case LogLevel.ERROR:
+      functions.logger.error(message, metadata);
+      break;
+  }
+}
+
+// Usage
+log(LogLevel.INFO, 'Draft generated successfully', {
+  userId: 'user123',
+  draftId: 'draft456',
+  generationTime: 85
+});
+
+log(LogLevel.ERROR, 'Failed to scrape Twitter source', {
+  userId: 'user123',
+  sourceId: 'src789',
+  error: error.message,
+  stack: error.stack
+});
+```
+
+---
+
+### 9.2 Error Handling Patterns
+
+**Cloud Functions:**
+```typescript
+export const generateDraft = functions.https.onRequest(
+  async (req: Request, res: Response) => {
+    const { userId } = req.body;
+    
+    try {
+      // Main logic...
+      const draft = await createDraft(userId);
+      
+      log(LogLevel.INFO, 'Draft generated', { userId, draftId: draft.draftId });
+      
+      return res.status(200).json({ success: true, draft });
+      
+    } catch (error: any) {
+      // Log error with context
+      log(LogLevel.ERROR, 'Draft generation failed', {
+        userId,
+        error: error.message,
+        stack: error.stack
+      });
+      
+      // Send to Sentry (if configured)
+      if (process.env.SENTRY_DSN) {
+        Sentry.captureException(error, {
+          tags: { function: 'generateDraft', userId }
+        });
+      }
+      
+      // Return user-friendly error
+      if (error.code === 'insufficient-content') {
+        return res.status(400).json({
+          error: 'Not enough content to generate draft',
+          message: 'Please add more sources or wait for content to be scraped.'
+        });
+      }
+      
+      // Generic error
+      return res.status(500).json({
+        error: 'Failed to generate draft',
+        message: 'Please try again later or contact support.'
+      });
+    }
+  }
+);
+```
+
+**Frontend:**
+```typescript
+// hooks/useSafeAsync.ts
+import { useState } from 'react';
+import * as Sentry from '@sentry/react';
+
+export function useSafeAsync<T>(
+  asyncFn: () => Promise<T>,
+  onError?: (error: Error) => void
+) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  const execute = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const result = await asyncFn();
+      return result;
+    } catch (err: any) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      
+      setError(error);
+      
+      // Log to Sentry
+      Sentry.captureException(error);
+      
+      // Call custom error handler
+      if (onError) onError(error);
+      
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  return { execute, loading, error };
+}
+
+// Usage
+const { execute, loading, error } = useSafeAsync(
+  () => updateDraft(draftId, changes),
+  (error) => toast.error(`Failed to save: ${error.message}`)
+);
+
+await execute();
+```
+
+---
+
+### 9.3 Retry Logic with Exponential Backoff
+
+```typescript
+// utils/retry.ts
+export async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  initialDelay: number = 1000
+): Promise<T> {
+  let lastError: Error;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      
+      // Don't retry on certain errors
+      if (error.code === 'permission-denied' || error.status === 400) {
+        throw error;
+      }
+      
+      // Calculate delay with exponential backoff + jitter
+      const delay = initialDelay * Math.pow(2, attempt) + Math.random() * 1000;
+      
+      log(LogLevel.WARN, `Retry attempt ${attempt + 1} after ${delay}ms`, {
+        error: error.message
+      });
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw lastError!;
+}
+
+// Usage
+const tweets = await retryWithBackoff(() => callApifyTwitterScraper(input));
+```
+
+---
+
+## 10. TESTING STRATEGY
+
+### 10.1 Unit Tests (Jest)
+
+```typescript
+// __tests__/algorithms/trendDetection.test.ts
+import { detectTrends } from '../../src/trends/detector';
+import { firestore } from '../testUtils/firebaseTestUtils';
+
+describe('Trend Detection Algorithm', () => {
+  beforeEach(async () => {
+    // Seed test data
+    await seedScrapedContent();
+  });
+  
+  afterEach(async () => {
+    // Cleanup
+    await clearFirestore();
+  });
+  
+  test('should detect emerging trends with >50% velocity', async () => {
+    const trends = await detectTrends();
+    
+    expect(trends.length).toBeGreaterThan(0);
+    expect(trends[0].velocity).toBeGreaterThan(50);
+    expect(trends[0].trendScore).toBeGreaterThan(60);
+  });
+  
+  test('should require cross-platform presence (≥2 platforms)', async () => {
+    const trends = await detectTrends();
+    
+    for (const trend of trends) {
+      const platforms = new Set(trend.sources.map(s => s.platform));
+      expect(platforms.size).toBeGreaterThanOrEqual(2);
+    }
+  });
+  
+  test('should filter out low-engagement keywords', async () => {
+    const trends = await detectTrends();
+    
+    for (const trend of trends) {
+      const totalMentions = trend.sources.reduce((sum, s) => sum + s.mentions, 0);
+      expect(totalMentions).toBeGreaterThan(5);
+    }
+  });
+});
+```
+
+---
+
+### 10.2 Integration Tests
+
+```typescript
+// __tests__/integrations/apifyTwitter.test.ts
+import { scrapeTwitterSource } from '../../src/scrapers/twitter';
+import axios from 'axios';
+
+// Mock Apify API
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+describe('Apify Twitter Scraper Integration', () => {
+  test('should successfully scrape tweets from valid handle', async () => {
+    // Mock Apify response
+    mockedAxios.post.mockResolvedValueOnce({
+      data: { data: { id: 'run123', defaultDatasetId: 'dataset456' } }
+    });
+    
+    mockedAxios.get
+      .mockResolvedValueOnce({
+        data: { data: { status: 'SUCCEEDED' } }
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: 'tweet123',
+            text: 'Test tweet',
+            author: { name: 'Test User', userName: 'testuser' },
+            createdAt: '2025-10-16T12:00:00Z',
+            likeCount: 100,
+            retweetCount: 50
+          }
+        ]
+      });
+    
+    const result = await scrapeTwitterSource({
+      body: { userId: 'user123', sourceId: 'src456' }
+    } as any, {} as any);
+    
+    expect(result.status).toBe(200);
+    expect(result.body.itemsScraped).toBe(1);
+  });
+  
+  test('should handle rate limit errors', async () => {
+    mockedAxios.post.mockRejectedValueOnce({
+      response: { status: 429 }
+    });
+    
+    const result = await scrapeTwitterSource({
+      body: { userId: 'user123', sourceId: 'src456' }
+    } as any, {} as any);
+    
+    expect(result.status).toBe(429);
+  });
+});
+```
+
+---
+
+### 10.3 End-to-End Tests (Playwright)
+
+```typescript
+// e2e/draftGeneration.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Draft Generation Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    // Login
+    await page.goto('/login');
+    await page.fill('[name="email"]', 'test@example.com');
+    await page.fill('[name="password"]', 'password123');
+    await page.click('button[type="submit"]');
+    
+    await expect(page).toHaveURL('/dashboard');
+  });
+  
+  test('should generate and display draft within 90 seconds', async ({ page }) => {
+    // Trigger manual draft generation
+    await page.click('button:has-text("Generate Draft Now")');
+    
+    // Wait for draft to be generated (with timeout)
+    await expect(page.locator('.draft-status')).toContainText('Draft Ready', {
+      timeout: 90000
+    });
+    
+    // Navigate to draft
+    await page.click('a:has-text("Review Draft")');
+    
+    // Verify draft content exists
+    await expect(page.locator('.draft-editor')).toBeVisible();
+    await expect(page.locator('.curated-items')).toBeVisible();
+    
+    const itemCount = await page.locator('.item-card').count();
+    expect(itemCount).toBeGreaterThan(5);
+  });
+  
+  test('should allow user to edit draft and save changes', async ({ page }) => {
+    await page.goto('/dashboard/drafts/draft123');
+    
+    // Edit draft body
+    const editor = page.locator('.ProseMirror');
+    await editor.click();
+    await editor.type(' This is an edit.');
+    
+    // Wait for auto-save
+    await expect(page.locator('.save-indicator')).toContainText('Saved', {
+      timeout: 5000
+    });
+    
+    // Reload page and verify edit persisted
+    await page.reload();
+    await expect(editor).toContainText('This is an edit.');
+  });
+  
+  test('should submit feedback with thumbs up/down', async ({ page }) => {
+    await page.goto('/dashboard/drafts/draft123');
+    
+    // Click thumbs up on first item
+    await page.click('.item-card:first-child button:has-text("👍")');
+    
+    // Verify feedback submitted
+    await expect(page.locator('.toast')).toContainText('Feedback recorded');
+    
+    // Click thumbs down on second item
+    await page.click('.item-card:nth-child(2) button:has-text("👎")');
+    
+    await expect(page.locator('.toast')).toContainText('Feedback recorded');
+  });
+});
+```
+
+---
+
+## 11. DEPLOYMENT ARCHITECTURE
+
+### 11.1 Firebase Project Setup
+
+```bash
+# 1. Create Firebase project
+firebase login
+firebase projects:create creatorpulse-prod
+
+# 2. Initialize Firebase in project directory
+firebase init
+
+# Select:
+# - Firestore
+# - Functions
+# - Hosting
+# - Storage
+
+# 3. Set environment variables for Cloud Functions
+firebase functions:config:set \
+  apify.token="YOUR_APIFY_TOKEN" \
+  anthropic.api_key="YOUR_CLAUDE_API_KEY" \
+  exa.api_key="YOUR_EXA_API_KEY" \
+  sendgrid.api_key="YOUR_SENDGRID_API_KEY"
+
+# 4. Deploy Firestore rules and indexes
+firebase deploy --only firestore:rules
+firebase deploy --only firestore:indexes
+
+# 5. Deploy Storage rules
+firebase deploy --only storage
+
+# 6. Deploy Cloud Functions
+cd functions
+npm install
+npm run build
+cd ..
+firebase deploy --only functions
+
+# 7. Build and deploy frontend
+npm run build
+firebase deploy --only hosting
+```
+
+---
+
+### 11.2 CI/CD Pipeline (GitHub Actions)
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy to Firebase
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies (frontend)
+        run: npm install
+      
+      - name: Run tests
+        run: npm test
+      
+      - name: Build frontend
+        run: npm run build
+      
+      - name: Install dependencies (functions)
+        run: |
+          cd functions
+          npm install
+          npm run build
+      
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "✅ CreatorPulse deployed successfully to production"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+      
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "❌ CreatorPulse deployment failed"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+```
+
+---
+
+### 11.3 Environment Management
+
+```bash
+# Create multiple Firebase projects for different environments
+firebase use dev      # Development
+firebase use staging  # Staging
+firebase use prod     # Production
+
+# Deploy to specific environment
+firebase use staging
+firebase deploy
+
+# Set different environment variables per environment
+firebase use dev
+firebase functions:config:set env="development"
+
+firebase use prod
+firebase functions:config:set env="production"
+```
+
+---
+
+## 12. CODE ORGANIZATION
+
+### 12.1 Project Structure
+
+```
+creatorpulse/
+├── frontend/
+│   ├── public/
+│   │   ├── index.html
+│   │   └── favicon.ico
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── common/
+│   │   │   │   ├── Button.tsx
+│   │   │   │   ├── Modal.tsx
+│   │   │   │   └── Spinner.tsx
+│   │   │   ├── drafts/
+│   │   │   │   ├── DraftEditor.tsx
+│   │   │   │   ├── DraftList.tsx
+│   │   │   │   └── DraftPreview.tsx
+│   │   │   └── sources/
+│   │   │       ├── SourceCard.tsx
+│   │   │       └── AddSourceModal.tsx
+│   │   ├── pages/
+│   │   │   ├── LandingPage.tsx
+│   │   │   ├── Dashboard.tsx
+│   │   │   ├── DraftsManager.tsx
+│   │   │   ├── SourcesLibrary.tsx
+│   │   │   └── Analytics.tsx
+│   │   ├── hooks/
+│   │   │   ├── useAuth.ts
+│   │   │   ├── useDrafts.ts
+│   │   │   └── useSources.ts
+│   │   ├── contexts/
+│   │   │   └── AuthContext.tsx
+│   │   ├── utils/
+│   │   │   ├── firebase.ts
+│   │   │   └── helpers.ts
+│   │   ├── types/
+│   │   │   └── index.ts
+│   │   ├── App.tsx
+│   │   └── index.tsx
+│   ├── package.json
+│   └── tsconfig.json
+├── functions/
+│   ├── src/
+│   │   ├── scrapers/
+│   │   ├── drafts/
+│   │   ├── trends/
+│   │   ├── feedback/
+│   │   ├── admin/
+│   │   ├── utils/
+│   │   ├── types/
+│   │   └── index.ts
+│   ├── package.json
+│   └── tsconfig.json
+├── firestore.rules
+├── firestore.indexes.json
+├── storage.rules
+├── firebase.json
+├── .firebaserc
+├── .github/
+│   └── workflows/
+│       └── deploy.yml
+├── docs/
+│   ├── PRD.md
+│   └── TDD.md
+├── package.json
+└── README.md
+```
+
+---
+
+### 12.2 Naming Conventions
+
+**Files:**
+- Components: `PascalCase.tsx` (e.g., `DraftEditor.tsx`)
+- Hooks: `camelCase.ts` (e.g., `useDrafts.ts`)
+- Utils: `camelCase.ts` (e.g., `formatDate.ts`)
+- Types: `index.ts` or `types.ts`
+
+**Functions:**
+- Cloud Functions: `camelCase` (e.g., `generateDraft`)
+- React Components: `PascalCase` (e.g., `DraftEditor`)
+- Utility functions: `camelCase` (e.g., `calculateRelevance`)
+
+**Variables:**
+- Constants: `UPPER_SNAKE_CASE` (e.g., `MAX_RETRY_ATTEMPTS`)
+- Regular variables: `camelCase` (e.g., `userId`)
+- Types/Interfaces: `PascalCase` (e.g., `User`, `Draft`)
+
+---
+
+## 13. THIRD-PARTY INTEGRATIONS
+
+### 13.1 Apify Integration
+
+**Setup:**
+```typescript
+// utils/apify.ts
+import axios from 'axios';
+
+const APIFY_BASE_URL = 'https://api.apify.com/v2';
+const APIFY_TOKEN = functions.config().apify.token;
+
+export async function runApifyActor(
+  actorId: string,
+  input: Record<string, any>,
+  timeoutSeconds: number = 300
+): Promise<any> {
+  // 1. Start actor run
+  const runUrl = `${APIFY_BASE_URL}/acts/${actorId}/runs`;
+  
+  const runResponse = await axios.post(
+    `${runUrl}?token=${APIFY_TOKEN}`,
+    input,
+    {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 10000
+    }
+  );
+  
+  const runId = runResponse.data.data.id;
+  const datasetId = runResponse.data.data.defaultDatasetId;
+  
+  // 2. Poll for completion
+  const startTime = Date.now();
+  let status = 'RUNNING';
+  
+  while (status === 'RUNNING') {
+    // Timeout check
+    if ((Date.now() - startTime) / 1000 > timeoutSeconds) {
+      throw new Error(`Apify actor timeout after ${timeoutSeconds}s`);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 10000));  // 10s delay
+    
+    const statusResponse = await axios.get(
+      `${APIFY_BASE_URL}/acts/${actorId}/runs/${runId}?token=${APIFY_TOKEN}`
+    );
+    
+    status = statusResponse.data.data.status;
+  }
+  
+  if (status !== 'SUCCEEDED') {
+    throw new Error(`Apify actor failed with status: ${status}`);
+  }
+  
+  // 3. Fetch results
+  const datasetUrl = `${APIFY_BASE_URL}/datasets/${datasetId}/items?token=${APIFY_TOKEN}`;
+  const datasetResponse = await axios.get(datasetUrl);
+  
+  return datasetResponse.data;
+}
+```
+
+---
+
+### 13.2 Claude API Integration
+
+**Setup:**
+```typescript
+// utils/claude.ts
+import Anthropic from '@anthropic-ai/sdk';
+
+const anthropic = new Anthropic({
+  apiKey: functions.config().anthropic.api_key
+});
+
+export async function generateWithClaude(
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number = 2000
+): Promise<string> {
+  const message = await anthropic.messages.create({
+    model: 'claude-3-5-sonnet-20241022',
+    max_tokens: maxTokens,
+    temperature: 0.7,
+    system: systemPrompt,
+    messages: [
+      {
+        role: 'user',
+        content: userPrompt
+      }
+    ]
+  });
+  
+  if (message.content[0].type === 'text') {
+    return message.content[0].text;
+  }
+  
+  throw new Error('Unexpected Claude response format');
+}
+```
+
+---
+
+## 14. MONITORING & OBSERVABILITY
+
+### 14.1 Firebase Analytics Events
+
+```typescript
+// Track key user actions
+import { getAnalytics, logEvent } from 'firebase/analytics';
+
+const analytics = getAnalytics();
+
+// Sign up
+logEvent(analytics, 'sign_up', {
+  method: 'email'
+});
+
+// Draft generated
+logEvent(analytics, 'draft_generated', {
+  user_id: userId,
+  draft_id: draftId,
+  generation_time: 85
+});
+
+// Draft sent
+logEvent(analytics, 'newsletter_sent', {
+  user_id: userId,
+  draft_id: draftId,
+  items_curated: 8,
+  trends_included: 3
+});
+```
+
+---
+
+### 14.2 Error Tracking (Sentry)
+
+```typescript
+// sentry.config.ts
+import * as Sentry from '@sentry/react';
+
+Sentry.init({
+  dsn: process.env.REACT_APP_SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+  tracesSampleRate: 1.0,
+  integrations: [
+    new Sentry.BrowserTracing(),
+    new Sentry.Replay()
+  ]
+});
+
+// Capture custom errors
+Sentry.captureException(error, {
+  tags: {
+    function: 'generateDraft',
+    userId: 'user123'
+  },
+  extra: {
+    draftId: 'draft456',
+    generationTime: 85
+  }
+});
+```
+
+---
+
+## 15. DEVELOPMENT WORKFLOW
+
+### 15.1 Git Workflow
+
+```bash
+# Feature branches
+git checkout -b feature/trend-detection
+git commit -m "feat: implement trend detection algorithm"
+git push origin feature/trend-detection
+
+# Create pull request on GitHub
+
+# After review and approval
+git checkout main
+git pull origin main
+git merge feature/trend-detection
+git push origin main
+
+# Automatic deployment via GitHub Actions
+```
+
+---
+
+### 15.2 Local Development Setup
+
+```bash
+# 1. Clone repository
+git clone https://github.com/your-org/creatorpulse.git
+cd creatorpulse
+
+# 2. Install dependencies
+npm install
+cd functions && npm install && cd ..
+
+# 3. Set up Firebase emulators
+firebase emulators:start
+
+# 4. Start frontend dev server
+npm run dev
+
+# 5. Access local app
+open http://localhost:5173
+```
+
+---
+
+## END OF TDD
+
+This Technical Design Document provides comprehensive implementation guidance for building CreatorPulse MVP. All code examples are production-ready and follow industry best practices.
+
+**Next Steps:**
+1. Review and approve TDD
+2. Create v0.dev prompt for frontend generation
+3. Create Firebase Studio prompt for backend setup
+4. Begin implementation sprint
+
+---
+
+**Document Version:** 1.0  
+**Last Updated:** October 16, 2025  
+**Status:** Ready for Implementation

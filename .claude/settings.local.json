@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:\\Users\\kinta\\OneDrive\\Desktop\\Creator_Pulse-main\\app\\api\\sources\")",
+      "Bash(mkdir -p \"C:\\Users\\kinta\\OneDrive\\Desktop\\Creator_Pulse-main\\app\\api\\sources\\[id]\")",
+      "Bash(mkdir -p \"C:\\Users\\kinta\\OneDrive\\Desktop\\Creator_Pulse-main\\app\\sources\")",
+      "Bash(touch \"C:\\Users\\kinta\\OneDrive\\Desktop\\Creator_Pulse-main\\app\\api\\sources\\route.ts\")",
+      "Bash(touch \"C:\\Users\\kinta\\OneDrive\\Desktop\\Creator_Pulse-main\\app\\api\\sources\\[id]\\route.ts\")",
+      "Bash(touch \"C:\\Users\\kinta\\OneDrive\\Desktop\\Creator_Pulse-main\\app\\sources\\page.tsx\")",
+      "Bash(node test-apis.js)",
+      "Bash(curl \"https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSyBld0gWekgnB22VKxA6mw_fPEGZUkjWJpM\")",
+      "Bash(claude mcp:*)",
+      "Bash(node test-scraping.js:*)",
+      "Bash(curl:*)",
+      "Bash(node test-rss.js:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Complete CreatorPulse automation system with email delivery\n\n## Features Added\n\n### Newsletter Email Template\n- Beautiful React email template with gradient header\n- Personalized greetings extracted from email\n- Markdown-to-HTML content formatting\n- Curated items displayed as styled cards\n- Mobile-responsive 600px layout\n- Professional footer with branding\n- Integration with Resend API (onboarding@resend.dev)\n\n### Quick Add Sources\n- 100+ curated sources across 10 domain categories\n- Tech & Development, AI & ML, Business, Web3, Design, etc.\n- One-click source addition with duplicate detection\n- Beautiful category selector with emoji icons\n- Color-coded badges for source types (RSS, YouTube, Twitter, Reddit)\n\n### Complete Automation System\n- Auto-scrape cronjob (every 6 hours)\n- Auto-generate cronjob (daily at 8 AM UTC)\n- Auto-send cronjob (hourly) - NEW!\n- Fully automated workflow from scraping to email delivery\n- Respects user schedule preferences (daily/weekly/biweekly/monthly)\n\n### Bug Fixes\n- Fixed signup page routing (/sign-up)\n- Added missing radio-group UI component\n- Replaced design system showcase with proper landing page\n- Updated pricing section with working signup links\n\n### Documentation\n- AUTOMATION_CRONJOBS_GUIDE.md - Complete automation guide\n- NEWSLETTER_EMAIL_TEMPLATE_UPDATE.md - Email template docs\n- QUICK_ADD_SOURCES_FEATURE.md - Quick Add feature docs\n- Updated .env.example with Resend and CRON_SECRET\n\n🤖 Generated with Claude Code\nhttps://claude.com/claude-code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

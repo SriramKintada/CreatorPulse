@@ -1,0 +1,1014 @@
+# v0.dev Master Prompt: CreatorPulse Frontend
+
+## Context
+Build a **stunning, modern, elegant frontend** for CreatorPulse - an AI-powered newsletter automation platform. The PRD and TDD have been uploaded. Create a **top-tier, production-ready UI** that feels premium, intuitive, and delightful.
+
+---
+
+## Design Philosophy
+
+### Visual Identity
+- **Modern & Clean**: Inspired by Linear, Vercel, and Notion's design systems
+- **Sophisticated Color Palette**: Dark mode primary with elegant accents
+- **Smooth Animations**: Framer Motion for micro-interactions and page transitions
+- **Glass Morphism**: Subtle blur effects and translucent cards
+- **Gradient Accents**: Strategic use of gradients for CTAs and highlights
+- **Neumorphism Elements**: Soft shadows for depth without harshness
+
+### Color Scheme
+**Primary Palette:**
+```css
+--bg-primary: #0a0a0f;           /* Deep navy-black */
+--bg-secondary: #141420;         /* Slightly lighter */
+--bg-tertiary: #1e1e2e;          /* Card backgrounds */
+--accent-primary: #6366f1;       /* Indigo - main CTA */
+--accent-secondary: #8b5cf6;     /* Purple - highlights */
+--accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+--text-primary: #f8fafc;         /* Almost white */
+--text-secondary: #94a3b8;       /* Muted gray */
+--text-tertiary: #64748b;        /* Subtle gray */
+--success: #10b981;              /* Emerald */
+--warning: #f59e0b;              /* Amber */
+--error: #ef4444;                /* Red */
+--border: rgba(148, 163, 184, 0.1); /* Subtle borders */
+```
+
+**Accent Variants for Status:**
+- Draft Ready: `#10b981` (Green)
+- In Progress: `#f59e0b` (Amber)
+- Sent: `#6366f1` (Indigo)
+- Archived: `#64748b` (Gray)
+
+### Typography
+```css
+--font-display: 'Inter', system-ui, sans-serif;  /* Headers, emphasis */
+--font-body: 'Inter', system-ui, sans-serif;     /* Body text */
+--font-mono: 'Fira Code', monospace;             /* Code, technical */
+
+/* Font Scales */
+--text-xs: 0.75rem;    /* 12px - captions */
+--text-sm: 0.875rem;   /* 14px - secondary */
+--text-base: 1rem;     /* 16px - body */
+--text-lg: 1.125rem;   /* 18px - emphasized */
+--text-xl: 1.25rem;    /* 20px - small headers */
+--text-2xl: 1.5rem;    /* 24px - section headers */
+--text-3xl: 1.875rem;  /* 30px - page headers */
+--text-4xl: 2.25rem;   /* 36px - hero text */
+--text-5xl: 3rem;      /* 48px - landing hero */
+```
+
+### Spacing System (8px grid)
+```css
+--space-1: 0.25rem;   /* 4px */
+--space-2: 0.5rem;    /* 8px */
+--space-3: 0.75rem;   /* 12px */
+--space-4: 1rem;      /* 16px */
+--space-5: 1.25rem;   /* 20px */
+--space-6: 1.5rem;    /* 24px */
+--space-8: 2rem;      /* 32px */
+--space-10: 2.5rem;   /* 40px */
+--space-12: 3rem;     /* 48px */
+--space-16: 4rem;     /* 64px */
+--space-20: 5rem;     /* 80px */
+```
+
+### Border Radius
+```css
+--radius-sm: 0.375rem;  /* 6px - tags, pills */
+--radius-md: 0.5rem;    /* 8px - buttons, inputs */
+--radius-lg: 0.75rem;   /* 12px - cards */
+--radius-xl: 1rem;      /* 16px - large cards */
+--radius-2xl: 1.5rem;   /* 24px - modals */
+--radius-full: 9999px;  /* Fully rounded */
+```
+
+---
+
+## Component Library Specifications
+
+### 1. Button Component
+**Variants:**
+- **Primary**: Gradient background, white text, shadow on hover
+- **Secondary**: Transparent with border, hover fills with subtle gradient
+- **Ghost**: No background, text color accent, hover shows background
+- **Danger**: Red gradient for destructive actions
+
+**States:** Default, Hover, Active, Disabled, Loading
+
+**Example:**
+```jsx
+<Button variant="primary" size="lg" icon={<Sparkles />}>
+  Generate Draft
+</Button>
+```
+
+**Styling:**
+- Primary: `bg-gradient-to-r from-accent-primary to-accent-secondary`
+- Height: `sm: 32px, md: 40px, lg: 48px`
+- Padding: `sm: 12px, md: 16px, lg: 20px`
+- Hover: Scale 1.02, shadow-lg
+- Active: Scale 0.98
+- Loading: Spinner + disabled state
+
+---
+
+### 2. Card Component
+**Design:**
+- Background: `bg-tertiary` with subtle gradient overlay
+- Border: 1px solid `border` color
+- Shadow: `shadow-xl` with colored glow on hover
+- Border radius: `radius-xl`
+- Backdrop blur: `backdrop-blur-sm` for glass effect
+
+**Variants:**
+- **Default**: Standard card
+- **Interactive**: Hover lifts card with shadow
+- **Featured**: Gradient border
+- **Glassmorphic**: Translucent with backdrop blur
+
+**Example:**
+```jsx
+<Card variant="interactive" glowColor="accent-primary">
+  <CardHeader>
+    <CardTitle>Your Latest Draft</CardTitle>
+  </CardHeader>
+  <CardContent>...</CardContent>
+</Card>
+```
+
+---
+
+### 3. Input & Form Components
+**Text Input:**
+- Background: `bg-secondary`
+- Border: 1px `border`, focus state shows `accent-primary`
+- Height: 48px (comfortable for touch)
+- Padding: 16px
+- Focus: Ring effect with `accent-primary`
+- Error state: Red border + error message below
+
+**Select Dropdown:**
+- Native select styled to match inputs
+- Custom dropdown with search (for many options)
+- Animated chevron icon
+
+**Textarea:**
+- Auto-expanding based on content
+- Min height: 100px
+- Max height: 400px with scroll
+
+**Checkbox/Radio:**
+- Custom styled with accent colors
+- Smooth animation on check/uncheck
+- Label clickable
+
+---
+
+### 4. Modal Component
+**Design:**
+- Overlay: Dark backdrop with blur (`backdrop-blur-md`)
+- Container: Centered, `bg-tertiary`, `radius-2xl`
+- Max width: 600px
+- Animation: Fade in + scale up
+- Close button: Top right, `ghost` variant
+- Footer: Sticky with actions
+
+**Example:**
+```jsx
+<Modal open={isOpen} onClose={onClose} size="lg">
+  <ModalHeader>Add New Source</ModalHeader>
+  <ModalBody>...</ModalBody>
+  <ModalFooter>
+    <Button variant="ghost" onClick={onClose}>Cancel</Button>
+    <Button variant="primary" onClick={onSubmit}>Add Source</Button>
+  </ModalFooter>
+</Modal>
+```
+
+---
+
+### 5. Navigation Components
+
+**Top Navigation Bar:**
+- Height: 64px
+- Background: `bg-primary` with blur effect (sticky)
+- Border bottom: 1px `border`
+- Logo: Left (with icon + wordmark)
+- Navigation links: Center (Home, Drafts, Sources, Analytics)
+- User menu: Right (avatar + dropdown)
+- Responsive: Hamburger menu on mobile
+
+**Sidebar Navigation (Desktop Dashboard):**
+- Width: 280px (collapsible to 64px)
+- Background: `bg-secondary`
+- Border right: 1px `border`
+- Icons: 24px with labels
+- Active state: Accent background + icon color
+- Hover: Subtle background change
+- Collapse button: Bottom
+
+**Mobile Bottom Tab Bar:**
+- Height: 64px
+- Background: `bg-secondary` with blur
+- 4 icons: Home, Drafts, Sources, Settings
+- Active: Accent color + label
+- Smooth page transitions
+
+---
+
+### 6. Draft Editor Component
+**Layout:**
+- Split view on desktop: Draft list (30%) | Editor (70%)
+- Full screen editor on mobile
+- Toolbar: Sticky at top with formatting options
+- Sidebar: Collapsible with AI suggestions
+
+**Toolbar:**
+- Formatting: Bold, Italic, Link, List, Heading
+- Actions: Save (auto), Preview, Send, Schedule
+- Status indicator: Saved / Saving... / Error
+
+**Editor Area:**
+- Rich text with markdown support
+- Syntax highlighting for markdown
+- Live preview toggle
+- Curated items: Expandable cards with reactions (👍👎⭐)
+- Trends section: Collapsible with gradient background
+
+**Reactions UI:**
+- Floating action buttons on hover
+- Smooth animation on click
+- Visual feedback (shake, color change)
+- Counter badge on item
+
+---
+
+### 7. Dashboard Widgets
+
+**Stats Cards:**
+- Small cards (quarter width on desktop)
+- Icon + metric + label
+- Sparkline chart for trend
+- Color-coded: Green (up), Red (down), Gray (neutral)
+- Smooth number count-up animation
+
+**Draft Status Widget:**
+- Large featured card
+- Status badge: Ready / In Progress / Scheduled
+- Quick action: "Review Draft" button
+- Time until delivery countdown
+
+**Activity Feed:**
+- Chronological list
+- Icon per activity type
+- Relative timestamps ("2 hours ago")
+- Smooth scroll animations
+- Load more button
+
+**Calendar View:**
+- Week view by default
+- Dots on days with scheduled drafts
+- Click dot → Preview modal
+- Mini month calendar in corner
+
+---
+
+### 8. Source Cards
+**Grid Layout:**
+- Masonry grid on desktop (3 columns)
+- Single column on mobile
+- Card design:
+  - Platform icon (large, colorful)
+  - Source name (bold)
+  - Status indicator (green dot = active)
+  - Quick stats: Items scraped, Items curated
+  - Actions: Edit (pencil), Delete (trash)
+- Hover: Lift + shadow + border glow
+
+**Status Indicator:**
+- Green pulsing dot: Active, scraping
+- Gray: Inactive
+- Red: Error (with error message on hover)
+
+---
+
+### 9. Loading States
+
+**Skeleton Loaders:**
+- Shimmer animation (gradient sweep)
+- Match component shapes (cards, lists, text)
+- Smooth transition to loaded content
+
+**Spinners:**
+- Size variants: sm, md, lg
+- Color: `accent-primary`
+- Animation: Smooth spin (0.8s)
+
+**Progress Bars:**
+- For uploads, processing
+- Gradient fill
+- Percentage label
+
+---
+
+### 10. Notifications & Toasts
+
+**Toast Notifications:**
+- Position: Top right
+- Auto-dismiss after 5 seconds
+- Types: Success (green), Error (red), Info (blue), Warning (amber)
+- Slide in from right
+- Dismiss button (X)
+- Icon per type
+
+**In-App Notifications:**
+- Bell icon in top nav with badge count
+- Dropdown panel with recent notifications
+- Mark as read
+- Clear all button
+
+---
+
+### 11. Empty States
+**Design:**
+- Centered content
+- Illustration or icon (large, muted color)
+- Heading: "No drafts yet"
+- Description: "Get started by adding sources"
+- Primary CTA: "Add Your First Source"
+- Light animation on icon (pulse, float)
+
+---
+
+### 12. Animations & Transitions
+
+**Page Transitions:**
+- Fade + slide up (100ms delay)
+- Route changes: Smooth crossfade
+
+**Micro-interactions:**
+- Button hover: Scale 1.02
+- Card hover: Lift (translateY -4px) + shadow
+- Input focus: Ring animation
+- Toggle switch: Smooth slide
+- Checkbox: Checkmark draw animation
+- Modal: Fade in overlay, scale up content
+
+**Loading:**
+- Skeleton shimmer
+- Spinner pulse
+- Progress bar fill
+
+**Feedback:**
+- Success: Checkmark animate in
+- Error: Shake animation
+- Copy: "Copied!" tooltip fade
+
+---
+
+## Page Specifications
+
+### Page 1: Landing Page (`/`)
+
+**Hero Section:**
+- Full viewport height
+- Background: Dark gradient with animated particles (slow float)
+- Headline: "Automate Your Newsletter in 20 Minutes" (gradient text)
+- Subheadline: "AI-powered curation that matches your voice"
+- CTA: "Start Free Trial" (large, gradient button)
+- Demo video thumbnail or animated mockup
+
+**Features Section:**
+- 3-column grid
+- Icon + Title + Description per feature
+- Icons: Large (64px), gradient fill
+- On scroll: Fade in + slide up (stagger)
+
+**How It Works:**
+- 3 steps in timeline layout
+- Visual: Screenshot or illustration per step
+- Connecting line between steps
+- Animated on scroll
+
+**Pricing Table:**
+- 3 tiers side by side (Free, Starter, Pro)
+- Featured tier: Highlighted with gradient border
+- Features list with checkmarks
+- CTA button per tier
+
+**Footer:**
+- Logo, tagline
+- Links: Product, Company, Legal, Social
+- Newsletter signup form (inline)
+
+---
+
+### Page 2: Sign Up / Login (`/signup`, `/login`)
+
+**Layout:**
+- Split screen: Left = Form, Right = Feature showcase
+- Form: Centered card (max-width 400px)
+- Background: Gradient with subtle pattern
+
+**Sign Up Form:**
+- Heading: "Create your account"
+- Fields: Name, Email, Password
+- Password strength indicator
+- "Sign up with Google" button (secondary)
+- Terms checkbox
+- Submit button: "Get Started" (primary)
+- "Already have account? Log in" link
+
+**Login Form:**
+- Heading: "Welcome back"
+- Fields: Email, Password
+- "Forgot password?" link
+- Submit: "Log in" (primary)
+- "New user? Sign up" link
+
+**Right Side (Feature Showcase):**
+- Rotating testimonials or feature highlights
+- Animated mockup of app
+- Stats: "10,000+ creators trust CreatorPulse"
+
+---
+
+### Page 3: Onboarding Flow (`/onboarding`)
+
+**Multi-Step Form:**
+- Progress bar at top (4 steps)
+- Smooth transitions between steps
+- "Back" / "Next" buttons
+
+**Step 1: Role Selection**
+- Visual cards: Creator | Agency Manager
+- Icons + descriptions
+- Select one → Next
+
+**Step 2: Connect Sources**
+- Tabbed interface: Twitter | YouTube | Reddit | Newsletter | URL
+- Form per tab (handle/URL input)
+- "Add Another Source" button
+- List of added sources below (with delete)
+- "Skip for Now" option
+
+**Step 3: Upload Newsletters**
+- Drag-and-drop file upload area
+- Or paste text directly
+- File list with delete option
+- Progress: "3/3 examples uploaded ✓"
+- Tooltip: "Why we need this"
+
+**Step 4: Delivery Preferences**
+- Time picker: "When should we deliver?"
+- Frequency: Radio buttons
+- Format: Dropdown
+- Timezone: Auto-detected (editable)
+
+**Step 5: Confirmation**
+- Success icon (animated checkmark)
+- "You're all set!"
+- "First draft in 24 hours"
+- CTA: "Go to Dashboard"
+
+---
+
+### Page 4: Dashboard Home (`/dashboard`)
+
+**Layout:**
+- Sidebar (left, 280px)
+- Main content area (right, flexible)
+- Top bar: Breadcrumbs, search, notifications, user menu
+
+**Top Section: Draft Status**
+- Large featured card
+- Status: "Draft Ready" (green badge)
+- Preview: Subject line + first paragraph
+- CTA: "Review Draft" button
+- Time info: "Generated 2 hours ago"
+
+**Stats Row:**
+- 4 KPI cards (quarter width each)
+- Icon + Metric + Label + Trend
+- Metrics: Drafts This Week, Avg Review Time, Last Sent, Engagement Trend
+- Animated count-up on load
+
+**Upcoming Drafts Calendar:**
+- Week view
+- Dots on scheduled days
+- Click → Preview modal
+
+**Recent Activity Feed:**
+- Chronological list (10 items)
+- Icon + description + timestamp
+- "View All" link
+
+**Quick Actions:**
+- Floating action buttons (bottom right)
+- Main: "Add Source"
+- Secondary: "Manual Draft", "View Trends"
+
+---
+
+### Page 5: Drafts Manager (`/dashboard/drafts`)
+
+**Layout:**
+- Split view: List (30%) | Detail (70%)
+- Mobile: Full screen list → Full screen detail
+
+**Draft List (Left Panel):**
+- Filters: All / Pending / Reviewed / Sent / Archived
+- Sort: Newest first / Oldest first / Scheduled soon
+- Each item:
+  - Date badge
+  - Status badge
+  - Subject line (bold)
+  - Preview text (muted)
+  - Review time (if reviewed)
+- Active item: Gradient border
+- Hover: Subtle background change
+
+**Draft Detail (Right Panel):**
+
+**Header:**
+- 3 subject line options (selectable radio buttons)
+- Scheduled for: Date + time
+- Status tag
+
+**Toolbar:**
+- Formatting buttons
+- Actions: Save, Preview, Approve & Send, Schedule
+- Save indicator: "Saved" (green) | "Saving..." (amber)
+
+**Editor:**
+- Rich text editor (TipTap)
+- Markdown support
+- Auto-save every 30s
+
+**Curated Items Section:**
+- Heading: "Curated Items" (gradient underline)
+- Cards per item:
+  - Title (link)
+  - Summary
+  - Commentary (italic, blue text)
+  - Reactions: 👍 Keep | 👎 Remove | ⭐ Favorite
+- Hover: Card lifts
+
+**Trends Section:**
+- Collapsible section
+- Gradient background (subtle)
+- 3 trend cards:
+  - Title
+  - Explainer
+  - Source links
+  - Trend score badge
+
+**Bottom Actions:**
+- Preview button (secondary)
+- Approve & Send (primary, large)
+- Schedule for Later (ghost)
+
+---
+
+### Page 6: Sources Library (`/dashboard/sources`)
+
+**Top Bar:**
+- Search input (with icon)
+- Filter dropdowns: Type, Status
+- View toggle: Grid | List
+- "Add Source" button (primary)
+
+**Grid View:**
+- Masonry grid (3 columns desktop)
+- Source cards:
+  - Platform icon (large)
+  - Source name
+  - Status dot
+  - Stats: X scraped, Y curated
+  - Actions: Edit, Delete (on hover)
+- Empty state if no sources
+
+**List View:**
+- Table layout
+- Columns: Name, Type, Items Scraped, Curated, Last Scrape, Status, Actions
+- Sortable headers
+- Row hover: Background highlight
+
+**Add Source Modal:**
+- Step 1: Select type (visual buttons)
+- Step 2: Form (handle/URL + config)
+- Step 3: Confirmation
+- Footer: Cancel | Add Source
+
+---
+
+### Page 7: Analytics Dashboard (`/dashboard/analytics`)
+
+**Layout:**
+- Grid of charts and tables
+- Export button (top right)
+
+**Section 1: Newsletter Performance**
+- Line chart: Open rates over 30 days
+- Line chart: Click rates
+- Bar chart: Top clicked links
+- Cards: Avg open rate, Avg CTR
+
+**Section 2: AI Performance**
+- Gauge chart: Draft acceptance rate (0-100%)
+- Line chart: Avg review time trend
+- Pie chart: Feedback distribution (👍 vs 👎 vs ⭐)
+
+**Section 3: Content Insights**
+- Bar chart: Most popular topics
+- Table: Best-performing sources
+- Tag cloud: Top keywords (interactive)
+
+**Section 4: Usage Stats**
+- Cards: Total drafts, Sent, Sources, Storage
+- Progress bars for quotas
+
+**Date Range Picker:**
+- Preset options: Last 7 days, 30 days, 90 days, All time
+- Custom range selector
+
+---
+
+### Page 8: Settings (`/dashboard/settings`)
+
+**Layout:**
+- Tabbed interface
+- Tabs: Profile | Delivery | Voice Training | Integrations | Billing
+
+**Profile Tab:**
+- Avatar upload (circular, 120px)
+- Name input
+- Email (read-only, verified badge)
+- Timezone dropdown
+- Password change (expandable section)
+- Delete account (danger button, bottom)
+
+**Delivery Preferences Tab:**
+- Time picker: "Delivery time"
+- Frequency: Radio buttons
+- Format: Dropdown
+- Toggles: Trends digest, Email notifications
+
+**Voice Training Tab:**
+- Upload section: "Uploaded Newsletters" list
+- "Upload More Examples" button
+- Voice parameters (read-only): Tone, Sentence length, Vocabulary
+- Last trained: Timestamp
+- "Retrain Voice" button
+
+**Integrations Tab:**
+- Cards per integration: Beehiiv, Substack, Mailchimp
+- Connect button (OAuth flow)
+- Disconnect option if connected
+
+**Billing Tab:**
+- Current plan card (highlighted)
+- Upgrade options
+- Usage this month: Progress bars
+- Billing history table
+
+---
+
+### Page 9: Admin Panel (`/admin`)
+
+**Sidebar:**
+- Tabs: Users, System Health, Feature Flags, Content Moderation
+
+**Users Tab:**
+- Table: Name, Email, Role, Signup Date, Status, Actions
+- Filters: Role, Account Type, Status
+- Search: By email/name
+- Actions per user: View, Suspend, Delete, Impersonate
+
+**System Health Tab:**
+- Cards: Apify status, Firebase functions, Database size, API quotas
+- Alert if any metric >80%
+- Real-time status indicators
+
+**Feature Flags Tab:**
+- Table: Feature, Enabled Globally, Enabled for Users
+- Toggle switches
+- "Enable for specific users" multi-select
+
+**Content Moderation Tab:**
+- Queue of flagged content
+- Each item: Preview, Reason, User, Actions
+- Actions: Approve, Remove, Ban Source
+
+---
+
+## Technical Requirements
+
+### Framework & Libraries
+```json
+{
+  "framework": "Next.js 14",
+  "styling": "Tailwind CSS + shadcn/ui components",
+  "state": "React Query (server state) + Zustand (client state)",
+  "forms": "React Hook Form + Zod validation",
+  "animations": "Framer Motion",
+  "charts": "Recharts or Chart.js",
+  "editor": "TipTap (rich text)",
+  "icons": "Lucide React",
+  "notifications": "Sonner (toast notifications)",
+  "date": "date-fns",
+  "firebase": "Firebase SDK v10"
+}
+```
+
+### Responsive Breakpoints
+```css
+/* Mobile-first approach */
+sm: 640px;   /* Small tablets */
+md: 768px;   /* Tablets */
+lg: 1024px;  /* Small desktops */
+xl: 1280px;  /* Desktops */
+2xl: 1536px; /* Large desktops */
+```
+
+### Performance Requirements
+- First Contentful Paint: <1.5s
+- Largest Contentful Paint: <2.5s
+- Time to Interactive: <3.5s
+- Lighthouse Score: >90
+
+### Accessibility (WCAG 2.1 AA)
+- Semantic HTML5
+- ARIA labels on interactive elements
+- Keyboard navigation (Tab, Enter, Esc)
+- Focus indicators (visible ring)
+- Color contrast ratios: 4.5:1 (text), 3:1 (UI)
+- Screen reader compatible
+
+---
+
+## Animation Guidelines
+
+### Page Transitions
+```jsx
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: -20 }}
+  transition={{ duration: 0.3, ease: "easeOut" }}
+>
+  {/* Page content */}
+</motion.div>
+```
+
+### Card Hover
+```css
+transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+&:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+}
+```
+
+### Button Click
+```css
+&:active {
+  transform: scale(0.98);
+}
+```
+
+### Modal Enter/Exit
+```jsx
+<AnimatePresence>
+  {isOpen && (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.2 }}
+    >
+      {/* Modal content */}
+    </motion.div>
+  )}
+</AnimatePresence>
+```
+
+---
+
+## Additional UI Elements
+
+### Badges
+- Small, rounded pills
+- Color-coded by status
+- Icon optional (left side)
+- Variants: Default, Success, Warning, Error, Info
+
+### Avatars
+- Circular, various sizes (sm: 32px, md: 40px, lg: 48px)
+- Initials if no image
+- Status indicator (online/offline dot, bottom right)
+
+### Progress Bars
+- Height: 8px
+- Background: `bg-secondary`
+- Fill: Gradient
+- Rounded ends
+- Animated fill on change
+
+### Tooltips
+- Dark background with white text
+- Arrow pointing to trigger
+- Max width: 200px
+- Delay: 500ms on hover
+- Keyboard accessible
+
+### Dropdown Menus
+- Smooth open/close animation
+- Max height with scroll
+- Active item highlighted
+- Keyboard navigation
+
+### Tabs
+- Underline indicator (animated slide)
+- Active tab: Bold + accent color
+- Hover: Subtle background
+
+### Breadcrumbs
+- Separator: "/" or ">"
+- Last item: Not clickable
+- Hover: Underline
+
+### Pagination
+- Numbers + Previous/Next
+- Active page: Filled circle
+- Disabled: Muted color
+
+---
+
+## Best Practices
+
+### Code Quality
+- TypeScript for type safety
+- ESLint + Prettier for formatting
+- Modular components (one component per file)
+- Reusable hooks for logic
+- Prop validation with Zod
+
+### Performance
+- Lazy load routes (React.lazy)
+- Image optimization (Next.js Image)
+- Debounce search inputs (300ms)
+- Virtualize long lists (react-window)
+- Memoize expensive computations
+
+### UX
+- Loading states for every async action
+- Error boundaries for graceful failures
+- Optimistic UI updates
+- Confirmation modals for destructive actions
+- Auto-save drafts (debounced)
+
+### Accessibility
+- Focus management in modals
+- Escape key closes overlays
+- Enter key submits forms
+- Arrow keys navigate lists
+- Tab order logical
+
+---
+
+## Final Instructions
+
+**Prioritize:**
+1. **Visual Excellence** - Make every pixel count, stunning design
+2. **Smooth Animations** - 60fps, delightful micro-interactions
+3. **Intuitive UX** - Zero learning curve, self-explanatory
+4. **Mobile-First** - Perfect experience on all devices
+5. **Performance** - Fast load times, smooth interactions
+
+**Build Order:**
+1. Design system (colors, typography, spacing)
+2. Core components (Button, Card, Input, Modal)
+3. Layout components (Nav, Sidebar, Footer)
+4. Landing page
+5. Auth pages (Login, Sign up)
+6. Dashboard home
+7. Drafts manager (most complex)
+8. Sources library
+9. Analytics
+10. Settings
+11. Admin panel
+
+**Don't forget:**
+- Empty states for every view
+- Loading states for every action
+- Error states with retry options
+- Success feedback (toasts, animations)
+- Keyboard shortcuts (bonus points)
+
+**Make it feel:**
+- Premium (like you paid $500/month)
+- Fast (instant feedback, smooth)
+- Delightful (little surprises, polish)
+- Professional (serious tool for creators)
+- Modern (2025 design trends)
+
+---
+
+## Example Component Implementation
+
+```tsx
+// Button.tsx - Example of desired quality
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  loading?: boolean;
+  disabled?: boolean;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+}
+
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  disabled = false,
+  icon,
+  children,
+  onClick,
+  className
+}: ButtonProps) {
+  const baseStyles = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-primary disabled:opacity-50 disabled:cursor-not-allowed';
+  
+  const variants = {
+    primary: 'bg-gradient-to-r from-accent-primary to-accent-secondary text-white hover:shadow-lg hover:shadow-accent-primary/50',
+    secondary: 'border border-border bg-transparent text-text-primary hover:bg-bg-tertiary',
+    ghost: 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary',
+    danger: 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-lg hover:shadow-red-500/50'
+  };
+  
+  const sizes = {
+    sm: 'h-8 px-3 text-sm',
+    md: 'h-10 px-4 text-base',
+    lg: 'h-12 px-6 text-lg'
+  };
+  
+  return (
+    <motion.button
+      whileHover={{ scale: disabled || loading ? 1 : 1.02 }}
+      whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
+      className={cn(
+        baseStyles,
+        variants[variant],
+        sizes[size],
+        className
+      )}
+      onClick={onClick}
+      disabled={disabled || loading}
+    >
+      {loading ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : icon ? (
+        icon
+      ) : null}
+      {children}
+    </motion.button>
+  );
+}
+```
+
+---
+
+## 🎨 Design Inspiration References
+
+Study these for visual excellence:
+- **Linear** (linear.app) - Clean, fast, modern
+- **Vercel Dashboard** (vercel.com) - Dark mode perfection
+- **Notion** (notion.so) - Intuitive, elegant
+- **Arc Browser** (arc.net) - Beautiful animations
+- **Framer** (framer.com) - Smooth interactions
+
+---
+
+## Deliverable
+
+Build a **complete, production-ready frontend** with:
+- All 9 pages fully functional
+- All components styled to perfection
+- Smooth animations throughout
+- Responsive on all devices
+- Accessible (WCAG AA)
+- TypeScript typed
+- Clean, maintainable code
+
+**Make it the most beautiful newsletter automation tool anyone has ever seen.** 🚀
+
+---
+
+*End of v0.dev Master Prompt*

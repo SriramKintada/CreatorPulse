@@ -1,0 +1,2863 @@
+# CreatorPulse - Product Requirements Document (PRD)
+
+**Version:** 1.0  
+**Date:** October 16, 2025  
+**Product Owner:** Sriram Kintada  
+**Development Approach:** MVP-First, Cost-Optimized, Self-Learning Focused
+
+---
+
+## CONTENTS
+
+1. [Approvals](#approvals)
+2. [Abstract](#abstract)
+3. [Business Objectives](#business-objectives)
+4. [KPI & Success Metrics](#kpi--success-metrics)
+5. [Target Audience & User Personas](#target-audience--user-personas)
+6. [Jobs To Be Done (JTBD)](#jobs-to-be-done-jtbd)
+7. [User Journeys](#user-journeys)
+8. [Core Features (MVP Scope)](#core-features-mvp-scope)
+9. [User Roles & Permissions](#user-roles--permissions)
+10. [Database Schema & Entity Relations](#database-schema--entity-relations)
+11. [Frontend Architecture](#frontend-architecture)
+12. [Technical Stack](#technical-stack)
+13. [API Integrations](#api-integrations)
+14. [Self-Learning Mechanism](#self-learning-mechanism)
+15. [User Flow Diagrams](#user-flow-diagrams)
+16. [Functional Requirements](#functional-requirements)
+17. [Testing & Quality Assurance](#testing--quality-assurance)
+18. [Risks & Mitigations](#risks--mitigations)
+19. [Costs & Budget](#costs--budget)
+20. [Assumptions & Dependencies](#assumptions--dependencies)
+21. [Compliance & Privacy](#compliance--privacy)
+22. [GTM & Rollout Plan](#gtm--rollout-plan)
+23. [Future Expansion (Post-MVP)](#future-expansion-post-mvp)
+
+---
+
+## 1. 👍 Approvals
+
+| ROLE | TEAMMATE | REVIEWED | STATUS |
+|------|----------|----------|--------|
+| Product | Sriram Kintada | TBD | Pending |
+| Engineering | TBD | TBD | Pending |
+| UX/Design | TBD | TBD | Pending |
+| QA | TBD | TBD | Pending |
+
+---
+
+## 2. 📝 Abstract
+
+**CreatorPulse** is an AI-powered content curation and newsletter drafting platform designed for independent creators, curators, and agency newsletter managers. It automatically aggregates insights from Twitter, YouTube, Reddit, and other sources, detects emerging trends, and generates personalized newsletter drafts that match the creator's voice—reducing drafting time from 2-3 hours to under 20 minutes.
+
+### Core Value Proposition
+
+- **Time Savings**: Automate 90% of research and drafting work
+- **Consistency**: Never miss a publishing schedule
+- **Voice Fidelity**: AI learns and matches creator's unique style
+- **Trend Intelligence**: Surface emerging topics before they go mainstream
+- **Scalability**: Manage multiple newsletters from one dashboard
+
+### MVP Priorities
+
+1. **Reliable Information Scraping**: Robust, cost-effective data collection using Apify actors and Exa AI
+2. **Self-Learning Ability**: Continuous improvement through user feedback and behavioral learning
+
+---
+
+## 3. 🎯 Business Objectives
+
+### Primary Objectives
+
+1. **Empower Content Creators**: Eliminate the research bottleneck for 1,000+ creators in Year 1
+2. **Establish Market Position**: Become the go-to tool for newsletter automation in the creator economy
+3. **Generate Revenue**: Achieve $10K MRR within 6 months through freemium model
+4. **Build Network Effects**: Leverage 100x Engineers cohort and creator networks for organic growth
+
+### Strategic Alignment
+
+- **EO Labs Synergy**: Showcase AI automation capabilities, generate leads for consulting services
+- **IISER Resources**: Leverage academic network for beta testing and research validation
+- **100x Network**: Tap into entrepreneur community for early adopters and referrals
+
+---
+
+## 4. 📊 KPI & Success Metrics
+
+### Launch KPIs (First 90 Days)
+
+| METRIC | TARGET | MEASUREMENT METHOD |
+|--------|--------|-------------------|
+| User Signups | 500 users | Firebase Analytics |
+| Draft Acceptance Rate | ≥70% | Inline feedback (👍/👎) |
+| Avg. Review Time | ≤20 minutes | Time tracking in app |
+| Newsletter Send Rate | ≥60% of drafts | Email delivery logs |
+| Engagement Uplift | 2x baseline open rates | Email analytics integration |
+| Retention (D7) | ≥40% | Firebase cohort analysis |
+| Retention (D30) | ≥25% | Firebase cohort analysis |
+
+### Product Quality Metrics
+
+| METRIC | TARGET | NOTES |
+|--------|--------|-------|
+| Scraping Success Rate | ≥95% | All Apify actors combined |
+| Trend Detection Accuracy | ≥80% | Manual validation sample |
+| Voice Match Score | ≥7.5/10 | User self-reported survey |
+| System Uptime | ≥99.5% | Firebase monitoring |
+| P95 Draft Generation Time | ≤90 seconds | Cloud Functions metrics |
+
+### Business Metrics (Post-Launch)
+
+- Monthly Active Users (MAU): 1,000 by Month 6
+- Paid Conversion Rate: ≥5% freemium to paid
+- Monthly Recurring Revenue (MRR): $10,000 by Month 6
+- Net Promoter Score (NPS): ≥40
+
+---
+
+## 5. 👥 Target Audience & User Personas
+
+### Primary Persona: Independent Creator
+
+**Name**: Sarah Chen  
+**Age**: 28  
+**Role**: Substack Creator (5K subscribers)  
+**Domain**: Tech & AI trends
+
+**Pain Points**:
+- Spends 3 hours researching and drafting each newsletter
+- Struggles to maintain 2x/week publishing schedule
+- Misses trending topics due to time constraints
+- Voice consistency varies when rushed
+
+**Goals**:
+- Publish consistently without burnout
+- Grow subscriber base through timely, quality content
+- Monetize newsletter with sponsorships
+
+**Why CreatorPulse**:
+- Direct ROI: Time saved = more content or rest
+- Maintains authentic voice through AI training
+- Catches trends before competitors
+
+### Secondary Persona: Agency Newsletter Manager
+
+**Name**: Marcus Rodriguez  
+**Age**: 32  
+**Role**: Content Manager at Digital Marketing Agency  
+**Responsibility**: Manages 8 client newsletters
+
+**Pain Points**:
+- Cannot scale beyond 10 clients manually
+- Each client requires unique voice and sources
+- Billing complexity with hourly model
+- Loses clients when quality drops due to overwork
+
+**Goals**:
+- Scale to 20+ clients profitably
+- Maintain quality across all accounts
+- Predictable costs per client
+- Streamline workflow automation
+
+**Why CreatorPulse**:
+- Usage-based pricing aligns with client count
+- Multi-account management in one dashboard
+- Proven time savings = higher margins
+- White-label potential for client retention
+
+---
+
+## 6. 🎯 Jobs To Be Done (JTBD)
+
+### Functional Jobs
+
+**When** I need to publish my newsletter on schedule,  
+**I want to** receive a 70% ready draft with curated links and trend insights,  
+**So I can** review, personalize, and send within 20 minutes instead of 3 hours.
+
+**When** I discover a new source worth monitoring (Twitter handle, subreddit, YouTube channel),  
+**I want to** add it with one click and have it integrated into future drafts,  
+**So I can** continuously improve my content without manual aggregation.
+
+**When** my writing style evolves or I receive feedback from readers,  
+**I want to** the AI to adapt and learn from my edits,  
+**So I can** maintain consistent voice quality as my brand develops.
+
+### Emotional Jobs
+
+**When** I'm feeling overwhelmed by the research process,  
+**I want to** trust that CreatorPulse captured everything important,  
+**So I can** sleep well knowing I won't miss key stories.
+
+**When** I publish using CreatorPulse drafts,  
+**I want to** still feel like the content is authentically mine,  
+**So I can** maintain reader trust and personal brand integrity.
+
+### Social Jobs
+
+**When** my open rates improve after using CreatorPulse,  
+**I want to** attribute success to smart curation choices,  
+**So I can** recommend the tool confidently to creator peers.
+
+---
+
+## 7. 🚶 User Journeys
+
+### Journey 1: First-Time User Onboarding
+
+**Trigger**: User signs up after seeing tweet about CreatorPulse
+
+**Steps**:
+1. Welcome screen → Select role (Creator/Agency)
+2. Connect sources (paste Twitter handles, YouTube channels, subreddit names)
+3. Upload 3-5 past newsletters for voice training
+4. Set delivery preferences (time, frequency, format)
+5. Receive first draft in 24 hours
+6. Review draft → Provide feedback (👍 sections, edit others)
+7. Send newsletter via email client
+8. Receive engagement report next day
+
+**Success Criteria**: User sends first draft within 48 hours of signup
+
+### Journey 2: Daily Power User
+
+**Trigger**: 8:00 AM local time (scheduled delivery)
+
+**Steps**:
+1. Receive email with draft newsletter + trends digest
+2. Open web dashboard on mobile during commute
+3. Skim 3 curated trend highlights
+4. Review draft body:
+   - 👍 intro paragraph (keep as-is)
+   - Edit one link summary for clarity
+   - 👎 one section (too tangential → feedback to AI)
+5. Click "Approve & Send" → Integrates with Beehiiv/Substack
+6. Newsletter sent to subscribers
+7. AI logs feedback for next iteration
+
+**Success Criteria**: ≤15 minutes from email open to send
+
+### Journey 3: Agency Manager - Multi-Account
+
+**Trigger**: Monday morning (weekly client review)
+
+**Steps**:
+1. Dashboard view: 8 client accounts listed
+2. Filter: "Drafts pending review"
+3. Client A: Tech SaaS → Quick approve (👍)
+4. Client B: Finance newsletter → Edit compliance language, approve
+5. Client C: Lifestyle brand → Regenerate with different tone (more casual)
+6. Bulk action: Schedule all approved drafts for week
+7. Export usage report for client billing
+
+**Success Criteria**: Manage 8 accounts in under 2 hours/week
+
+---
+
+## 8. 🚀 Core Features (MVP Scope)
+
+### 8.1 User Authentication & Profiles
+
+**Feature**: Firebase Authentication with email/password and Google OAuth
+
+**Sub-features**:
+- Email verification for new accounts
+- Password reset flow
+- Profile setup: Name, role (Creator/Agency), timezone
+- Account deletion (GDPR compliant)
+
+### 8.2 Source Connection Manager
+
+**Feature**: Add and manage content sources for curation
+
+**Supported Sources (MVP)**:
+- Twitter/X handles and hashtags (via Apify Twitter Scraper)
+- YouTube channels (via Apify YouTube Scraper)
+- Subreddits (via Apify Reddit Scraper)
+- Newsletter RSS feeds (via Exa AI)
+- Custom web URLs (via Exa AI web crawler)
+
+**UI/UX**:
+- Simple form: "Add Source" with dropdown (Twitter/YouTube/Reddit/Newsletter/URL)
+- Source library view: Grid/list of connected sources with edit/delete
+- Source health indicator: Green (active), Yellow (slow), Red (failing)
+
+### 8.3 Writing Style Trainer
+
+**Feature**: Upload past newsletters to train AI on creator's voice
+
+**Process**:
+1. User uploads 5-20 past newsletters (PDF, TXT, or paste text)
+2. Backend extracts writing patterns: tone, vocabulary, sentence structure, formatting preferences
+3. Few-shot learning prompt construction for Claude/GPT
+4. Validation: Generate 3 test paragraphs for user approval before production use
+
+**Requirements**:
+- Support markdown, plain text, and PDF uploads
+- Extract clean text (strip ads, footers, formatting)
+- Store training data securely per user (Firebase Storage)
+- Ability to retrain: User can add more examples anytime
+
+### 8.4 Research & Trend Engine
+
+**Feature**: Automated source monitoring and trend spike detection
+
+**Workflow**:
+1. **Scheduled Crawls** (Firebase Cloud Functions + Cron):
+   - Twitter: Every 6 hours
+   - YouTube: Every 12 hours
+   - Reddit: Every 8 hours
+   - Newsletters/Web: Every 24 hours
+
+2. **Data Processing**:
+   - Deduplicate content (hash-based)
+   - Extract metadata: Publish date, engagement metrics, keywords
+   - Store raw data in Firestore collections
+
+3. **Trend Detection Algorithm**:
+   - Calculate engagement velocity (likes/comments over time)
+   - Identify keyword/topic frequency spikes (week-over-week)
+   - Cross-reference with Google Trends API (Apify Google Trends Scraper)
+   - Score trends: 0-100 based on novelty, velocity, cross-platform mentions
+
+4. **Trend Ranking**:
+   - Top 5 trends surfaced daily
+   - Categorize by topic (Tech, Culture, Business, etc.)
+   - Provide 2-sentence explainer + source links
+
+**Output**:
+- "Trends to Watch" block in newsletter draft
+- Separate trends digest email (optional)
+
+### 8.5 Newsletter Draft Generator
+
+**Feature**: AI-generated newsletter matching user's voice
+
+**Components**:
+
+**A. Draft Structure**:
+```
+Subject Line (AI generated, 3 options)
+
+---
+
+Intro Paragraph (personalized greeting + hook)
+
+Main Content:
+- Link 1: Title + 2-3 sentence summary + commentary
+- Link 2: Title + 2-3 sentence summary + commentary
+- Link 3: Title + 2-3 sentence summary + commentary
+(Repeat for 5-8 curated items)
+
+Trends to Watch Section:
+- Trend 1: Explainer + link
+- Trend 2: Explainer + link
+- Trend 3: Explainer + link
+
+Closing Paragraph (call-to-action + sign-off)
+```
+
+**B. AI Prompt Architecture**:
+```
+System: You are a newsletter ghostwriter for [Creator Name]. 
+Style: [Extracted voice parameters from training]
+Sources: [Today's top 20 curated items from user's sources]
+Trends: [Top 5 detected trends]
+Task: Generate newsletter draft following this structure...
+```
+
+**C. Quality Controls**:
+- Fact-checking layer: Cross-reference with Exa AI search
+- Link validation: Ensure all URLs are live
+- Reading level check: Target 8th-grade readability (Flesch score)
+- Length enforcement: 800-1200 words (user configurable)
+
+### 8.6 Morning Delivery System
+
+**Feature**: Scheduled draft delivery via email and dashboard
+
+**Delivery Mechanism**:
+- Primary: Email with draft as HTML body
+- Secondary: Push notification (mobile) + dashboard badge
+- Fallback: SMS if email delivery fails (opt-in)
+
+**Delivery Time**:
+- Default: 8:00 AM user's local timezone
+- Configurable: Any time between 6 AM - 10 AM
+
+**Email Template**:
+```
+Subject: Your CreatorPulse Draft is Ready 📬
+
+Body:
+- Quick stats: X new items curated, Y trends detected
+- "Trends Digest" (collapsible section)
+- Full draft preview
+- CTA buttons: "Review in Dashboard" | "Edit & Send"
+```
+
+### 8.7 Feedback Loop Interface
+
+**Feature**: Inline reactions and edit tracking for AI improvement
+
+**Feedback Mechanisms**:
+
+**A. Quick Reactions**:
+- 👍 "Keep this section" (signals good curation/writing)
+- 👎 "Remove this" (signals irrelevant or poor quality)
+- ⭐ "Save to favorites" (signals highly valuable content)
+
+**B. Edit Tracking**:
+- Diff algorithm: Compare user's final sent version vs. AI draft
+- Track changes: Added text, deleted text, rewritten sentences
+- Store edits in feedback database for retraining
+
+**C. Post-Send Survey** (optional, once/week):
+- "How satisfied were you with this week's drafts?" (1-5 scale)
+- "Which sections needed most editing?" (multiselect)
+- "Any sources we should add/remove?" (open text)
+
+**D. Feedback Processing**:
+- Aggregate feedback weekly
+- Retrain AI prompt: Adjust tone, content preferences, source weighting
+- A/B test improvements: 50% users get updated model, compare acceptance rates
+
+### 8.8 Responsive Web Dashboard
+
+**Feature**: Desktop and mobile web interface for managing CreatorPulse
+
+**Key Views**:
+
+**A. Home Dashboard**:
+- Today's draft status: Ready/In Progress/Scheduled
+- Quick stats: This week's sent newsletters, avg review time, engagement trends
+- Upcoming drafts calendar
+- Quick actions: "Start New Draft", "Manage Sources", "View Analytics"
+
+**B. Drafts Manager**:
+- List view: All drafts (Pending/Reviewed/Sent/Archived)
+- Draft editor: Split view (AI draft left, user edits right)
+- Version history: Revert to previous AI drafts
+- Preview mode: See newsletter as subscribers will
+
+**C. Sources Library**:
+- Grid of connected sources with icons
+- "Add Source" modal (form with validation)
+- Source performance metrics: How many items curated from each source
+- Edit/delete source actions
+
+**D. Analytics Dashboard**:
+- Engagement metrics: Open rate, click-through rate (if email provider integrated)
+- AI performance: Draft acceptance rate over time, avg edit time
+- Content insights: Most popular topics, best-performing sources
+- Export reports: PDF/CSV for client billing (agencies)
+
+**E. Settings**:
+- Profile management
+- Delivery preferences (time, frequency, format)
+- Style retraining: Upload new newsletter examples
+- Billing & usage (post-MVP)
+- Integrations: Connect Beehiiv, Substack, email provider (post-MVP)
+
+---
+
+## 9. 👤 User Roles & Permissions
+
+### Role 1: Admin (Platform Owner)
+
+**Access Level**: Full system access
+
+**Permissions**:
+- User management: View all users, ban/suspend accounts
+- System monitoring: Access Firebase logs, error tracking, usage analytics
+- Feature flags: Enable/disable features per user or globally
+- Content moderation: Review flagged content, remove inappropriate sources
+- Database access: Direct Firestore/Storage read/write (emergency only)
+- Financial: View revenue, usage costs, billing issues
+- Support: Respond to user tickets, impersonate users for debugging
+
+**Admin Dashboard Features**:
+- User list: Filter by signup date, activity, paid/free
+- System health: Apify actor status, Firebase function errors, API quotas
+- Usage metrics: Total drafts generated, scraping costs, storage size
+- Feature rollout: Gradual rollout controls (e.g., enable Trend Engine for 10% users first)
+
+### Role 2: Creator (Standard User)
+
+**Access Level**: Own account and data only
+
+**Permissions**:
+- Manage own profile and preferences
+- Add/edit/delete own sources
+- Upload newsletter examples for voice training
+- View and edit own drafts
+- Provide feedback on AI outputs
+- View own analytics and engagement metrics
+- Export own data (GDPR right to data portability)
+
+**Restrictions**:
+- Cannot view other users' data
+- Cannot access admin functions
+- Cannot modify system settings
+- Limited to 100 sources per account (MVP limit)
+
+### Role 3: Agency Manager (Multi-Account User)
+
+**Access Level**: Multiple client accounts under one login
+
+**Permissions**:
+- All Creator permissions for each managed account
+- Switch between client accounts in dashboard
+- Bulk actions: Approve multiple drafts at once
+- Aggregated analytics across all managed accounts
+- Usage reports per client (for billing)
+- Create sub-accounts for team members (post-MVP)
+
+**Restrictions**:
+- Cannot access admin functions
+- Cannot view other agencies' data
+- Maximum 20 client accounts (MVP limit, expandable in paid tiers)
+
+### Future Roles (Post-MVP)
+
+**Team Member**: Limited access to specific client accounts under Agency Manager  
+**Read-Only Viewer**: Can view drafts but not edit (for approval workflows)  
+**API User**: Programmatic access via API keys for custom integrations
+
+---
+
+## 10. 🗄️ Database Schema & Entity Relations
+
+### Technology: Firebase Firestore (NoSQL Document Database)
+
+### Database Architecture Principles
+
+- **Denormalization**: Optimize for read performance (newsletters are read-heavy)
+- **Subcollections**: Use for one-to-many relationships (e.g., User → Sources)
+- **Indexes**: Create composite indexes for common queries
+- **Security Rules**: Implement granular Firestore security rules per role
+
+---
+
+### Entity 1: Users
+
+**Collection**: `/users/{userId}`
+
+**Schema**:
+```json
+{
+  "userId": "string (Firebase Auth UID)",
+  "email": "string",
+  "displayName": "string",
+  "role": "enum: ['admin', 'creator', 'agency']",
+  "accountType": "enum: ['free', 'starter', 'pro']",
+  "timezone": "string (IANA tz database)",
+  "preferences": {
+    "deliveryTime": "string (HH:MM format)",
+    "deliveryFrequency": "enum: ['daily', '3x_week', '2x_week', 'weekly']",
+    "draftFormat": "enum: ['markdown', 'html', 'plain_text']",
+    "trendDigestEnabled": "boolean",
+    "emailNotifications": "boolean"
+  },
+  "voiceProfile": {
+    "trained": "boolean",
+    "trainingDocuments": ["array of Storage URLs"],
+    "styleParameters": {
+      "tone": "string (e.g., 'casual', 'professional', 'witty')",
+      "avgSentenceLength": "number",
+      "vocabularyLevel": "string",
+      "formattingPreferences": "object"
+    },
+    "lastUpdated": "timestamp"
+  },
+  "usage": {
+    "draftsGenerated": "number",
+    "draftsSent": "number",
+    "sourcesConnected": "number",
+    "storageUsed": "number (MB)"
+  },
+  "billing": {
+    "stripeCustomerId": "string (null for MVP)",
+    "subscriptionStatus": "string",
+    "currentPeriodEnd": "timestamp"
+  },
+  "createdAt": "timestamp",
+  "lastLoginAt": "timestamp"
+}
+```
+
+**Indexes**:
+- `role` (for admin queries)
+- `accountType` (for feature gating)
+- `createdAt` (for cohort analysis)
+
+---
+
+### Entity 2: Sources
+
+**Collection**: `/users/{userId}/sources/{sourceId}`
+
+**Schema**:
+```json
+{
+  "sourceId": "string (auto-generated)",
+  "type": "enum: ['twitter', 'youtube', 'reddit', 'newsletter_rss', 'custom_url']",
+  "identifier": "string (handle, URL, channel ID, etc.)",
+  "displayName": "string (user-friendly name)",
+  "description": "string (optional)",
+  "config": {
+    "twitter": {
+      "handle": "string",
+      "includeRetweets": "boolean",
+      "maxTweetsPerScrape": "number"
+    },
+    "youtube": {
+      "channelId": "string",
+      "maxVideosPerScrape": "number",
+      "includeShorts": "boolean"
+    },
+    "reddit": {
+      "subreddit": "string",
+      "category": "enum: ['hot', 'new', 'top', 'rising']",
+      "maxPostsPerScrape": "number"
+    },
+    "newsletter_rss": {
+      "feedUrl": "string"
+    },
+    "custom_url": {
+      "url": "string",
+      "crawlDepth": "number"
+    }
+  },
+  "scraperConfig": {
+    "apifyActorId": "string (e.g., 'streamers/youtube-channel-scraper')",
+    "scrapeFrequency": "string (cron expression)",
+    "lastScrapeAt": "timestamp",
+    "lastScrapeStatus": "enum: ['success', 'partial', 'failed']",
+    "itemsScrapedLastRun": "number"
+  },
+  "performance": {
+    "totalItemsScraped": "number",
+    "itemsCurated": "number (how many made it into drafts)",
+    "avgRelevanceScore": "number (0-1)"
+  },
+  "isActive": "boolean",
+  "createdAt": "timestamp",
+  "updatedAt": "timestamp"
+}
+```
+
+**Indexes**:
+- `type` (for filtering sources by type)
+- `isActive` (for active source queries)
+- `lastScrapeAt` (for scheduling scrapes)
+
+---
+
+### Entity 3: ScrapedContent
+
+**Collection**: `/scrapedContent/{contentId}`
+
+**Schema**:
+```json
+{
+  "contentId": "string (hash of URL + timestamp)",
+  "userId": "string (owner of source)",
+  "sourceId": "string (reference to Sources collection)",
+  "sourceType": "enum: ['twitter', 'youtube', 'reddit', 'newsletter', 'web']",
+  "rawData": {
+    "twitter": {
+      "tweetId": "string",
+      "text": "string",
+      "author": "string",
+      "authorHandle": "string",
+      "createdAt": "timestamp",
+      "likes": "number",
+      "retweets": "number",
+      "replies": "number",
+      "url": "string",
+      "media": ["array of media URLs"]
+    },
+    "youtube": {
+      "videoId": "string",
+      "title": "string",
+      "description": "string",
+      "channelName": "string",
+      "publishedAt": "timestamp",
+      "viewCount": "number",
+      "likeCount": "number",
+      "commentCount": "number",
+      "duration": "string",
+      "thumbnailUrl": "string",
+      "url": "string"
+    },
+    "reddit": {
+      "postId": "string",
+      "title": "string",
+      "body": "string",
+      "author": "string",
+      "subreddit": "string",
+      "createdAt": "timestamp",
+      "upvotes": "number",
+      "commentCount": "number",
+      "url": "string",
+      "imageUrl": "string"
+    }
+  },
+  "processed": {
+    "keywords": ["array of extracted keywords"],
+    "topics": ["array of classified topics"],
+    "sentiment": "enum: ['positive', 'neutral', 'negative']",
+    "relevanceScore": "number (0-1, based on user's past interests)",
+    "engagementScore": "number (normalized engagement metrics)"
+  },
+  "trendSignals": {
+    "isTrending": "boolean",
+    "trendScore": "number (0-100)",
+    "trendVelocity": "number (rate of growth)",
+    "crossPlatformMentions": "number"
+  },
+  "curatedInto": ["array of draftIds"],
+  "scrapedAt": "timestamp",
+  "expiresAt": "timestamp (30 days TTL for cleanup)"
+}
+```
+
+**Indexes**:
+- `userId` + `scrapedAt` (for user's recent content)
+- `isTrending` + `trendScore` (for trend queries)
+- `expiresAt` (for TTL cleanup)
+
+---
+
+### Entity 4: Drafts
+
+**Collection**: `/users/{userId}/drafts/{draftId}`
+
+**Schema**:
+```json
+{
+  "draftId": "string (auto-generated)",
+  "status": "enum: ['generated', 'reviewed', 'sent', 'archived']",
+  "scheduledFor": "timestamp",
+  "generatedAt": "timestamp",
+  "reviewedAt": "timestamp (null if not reviewed)",
+  "sentAt": "timestamp (null if not sent)",
+  "aiGenerated": {
+    "subjectLines": ["array of 3 AI-generated options"],
+    "body": "string (markdown or HTML)",
+    "curatedItems": [
+      {
+        "contentId": "string (ref to ScrapedContent)",
+        "title": "string",
+        "summary": "string (AI-generated)",
+        "commentary": "string (AI-generated in creator's voice)",
+        "url": "string",
+        "position": "number (order in draft)"
+      }
+    ],
+    "trendsSection": [
+      {
+        "trendId": "string",
+        "title": "string",
+        "explainer": "string (2 sentences)",
+        "sources": ["array of URLs"],
+        "trendScore": "number"
+      }
+    ],
+    "introText": "string",
+    "closingText": "string"
+  },
+  "userEdits": {
+    "editedBody": "string (null if no edits)",
+    "addedContent": ["array of user-added items"],
+    "removedContentIds": ["array of contentIds user deleted"],
+    "feedbackItems": [
+      {
+        "contentId": "string",
+        "reaction": "enum: ['thumbs_up', 'thumbs_down', 'star']",
+        "comment": "string (optional)"
+      }
+    ],
+    "totalEditTimeSeconds": "number"
+  },
+  "final": {
+    "subjectLine": "string (user's choice)",
+    "body": "string (final version after edits)"
+  },
+  "performance": {
+    "emailSent": "boolean",
+    "deliveredTo": "number (subscriber count)",
+    "openRate": "number (if integrated with email provider)",
+    "clickRate": "number"
+  },
+  "aiMetrics": {
+    "acceptanceRate": "number (% of draft kept as-is)",
+    "voiceMatchScore": "number (user-reported, 1-10)",
+    "generationTimeSeconds": "number"
+  }
+}
+```
+
+**Indexes**:
+- `status` (for filtering drafts)
+- `scheduledFor` (for delivery queue)
+- `generatedAt` (for recent drafts)
+
+---
+
+### Entity 5: Trends
+
+**Collection**: `/trends/{trendId}`
+
+**Schema**:
+```json
+{
+  "trendId": "string (auto-generated)",
+  "title": "string (trend topic/keyword)",
+  "category": "enum: ['tech', 'business', 'culture', 'science', 'politics', 'other']",
+  "description": "string (2-3 sentence explainer)",
+  "detectionDate": "timestamp",
+  "trendScore": "number (0-100)",
+  "velocity": "number (rate of growth: mentions per hour)",
+  "sources": [
+    {
+      "platform": "enum: ['twitter', 'youtube', 'reddit', 'google_trends']",
+      "mentions": "number",
+      "topPosts": ["array of contentIds with highest engagement"]
+    }
+  ],
+  "keywords": ["array of related keywords"],
+  "peakDate": "timestamp (when trend peaked)",
+  "status": "enum: ['emerging', 'peaked', 'declining', 'dormant']",
+  "notifiedUsers": ["array of userIds who received this trend"],
+  "curatedInto": ["array of draftIds"],
+  "expiresAt": "timestamp (7 days TTL)"
+}
+```
+
+**Indexes**:
+- `category` + `trendScore` (for trending topics by category)
+- `status` + `detectionDate` (for active trends)
+- `expiresAt` (for cleanup)
+
+---
+
+### Entity 6: Feedback
+
+**Collection**: `/users/{userId}/feedback/{feedbackId}`
+
+**Schema**:
+```json
+{
+  "feedbackId": "string (auto-generated)",
+  "draftId": "string (reference)",
+  "feedbackType": "enum: ['inline_reaction', 'edit_tracking', 'survey']",
+  "reactionData": {
+    "contentId": "string",
+    "reaction": "enum: ['thumbs_up', 'thumbs_down', 'star']",
+    "comment": "string (optional)"
+  },
+  "editData": {
+    "original": "string (AI-generated section)",
+    "edited": "string (user's edit)",
+    "editType": "enum: ['rewrite', 'delete', 'add']"
+  },
+  "surveyData": {
+    "satisfactionScore": "number (1-5)",
+    "mostEditedSections": ["array of sections"],
+    "openFeedback": "string"
+  },
+  "processedForRetraining": "boolean",
+  "createdAt": "timestamp"
+}
+```
+
+---
+
+### Entity 7: AdminLogs
+
+**Collection**: `/adminLogs/{logId}`
+
+**Schema**:
+```json
+{
+  "logId": "string (auto-generated)",
+  "adminUserId": "string",
+  "action": "enum: ['user_ban', 'feature_toggle', 'content_moderation', 'user_impersonation', 'data_export']",
+  "targetUserId": "string (if applicable)",
+  "details": "object (action-specific data)",
+  "timestamp": "timestamp"
+}
+```
+
+---
+
+### Entity Relationship Diagram (ERD)
+
+```
+Users (1) ──┬─→ (N) Sources
+            │
+            ├─→ (N) Drafts
+            │       ├─→ (N) CuratedItems (refs ScrapedContent)
+            │       └─→ (N) TrendItems (refs Trends)
+            │
+            └─→ (N) Feedback
+
+Sources (1) ──→ (N) ScrapedContent
+
+ScrapedContent (N) ←──┬ (N) Drafts
+                      └ (N) Trends
+
+Trends (N) ──→ (N) Drafts
+
+Admin ──→ (N) AdminLogs
+```
+
+---
+
+## 11. 🎨 Frontend Architecture
+
+### Framework: React.js with Next.js (or Create React App for simpler MVP)
+
+### Architecture: Component-Based, Responsive Design
+
+---
+
+### Page Structure
+
+#### 1. **Landing Page** (`/`)
+
+**Purpose**: Marketing page for new visitors
+
+**Sections**:
+- Hero: "Automate Your Newsletter in 20 Minutes" + CTA ("Start Free Trial")
+- Problem statement: "Tired of spending 3 hours researching and drafting?"
+- How It Works: 3-step visual (Connect → Train → Receive)
+- Features showcase: Cards for each core feature
+- Pricing table (post-MVP)
+- Testimonials (post-launch)
+- Footer: Links, social, contact
+
+**Tech**: Static page, SEO optimized
+
+---
+
+#### 2. **Authentication Pages**
+
+**A. Sign Up** (`/signup`)
+- Email + password form
+- Google OAuth button
+- "Already have an account? Log in"
+
+**B. Log In** (`/login`)
+- Email + password form
+- Google OAuth button
+- "Forgot password?" link
+- "New user? Sign up"
+
+**C. Password Reset** (`/reset-password`)
+- Email input → Send reset link
+- Confirmation message
+
+**Tech**: Firebase Auth SDK, form validation (React Hook Form)
+
+---
+
+#### 3. **Onboarding Flow** (`/onboarding`)
+
+**Step 1**: Welcome + Role Selection
+- "Are you a Creator or Agency Manager?"
+- Visual cards to select role
+
+**Step 2**: Connect Sources
+- "Add Your First Sources"
+- Tabbed interface: Twitter | YouTube | Reddit | Newsletter | Web URL
+- Form per source type
+- "Add Another Source" button
+- "Skip for Now" option
+
+**Step 3**: Upload Past Newsletters
+- Drag-and-drop file upload (PDF, TXT, MD)
+- Or paste text directly
+- "Need at least 3 examples" progress bar
+- "Why we need this" explainer tooltip
+
+**Step 4**: Set Delivery Preferences
+- Time picker: "When should we deliver your draft?"
+- Frequency: Daily / 3x week / 2x week / Weekly
+- Format: Markdown / HTML / Plain text
+- Timezone auto-detected (editable)
+
+**Step 5**: Confirmation
+- "You're all set!"
+- "Your first draft will arrive in 24 hours"
+- CTA: "Go to Dashboard"
+
+**Tech**: Multi-step form with progress indicator, local storage for draft persistence
+
+---
+
+#### 4. **Main Dashboard** (`/dashboard`)
+
+**Layout**: Sidebar + Main Content Area
+
+**Sidebar Navigation**:
+- Home (Dashboard)
+- Drafts
+- Sources
+- Analytics
+- Settings
+- (Admin only) Admin Panel
+
+**Main Content - Dashboard Home**:
+
+**Top Section**: Today's Draft Status
+- Card: "Draft Ready" (green) | "Draft In Progress" (yellow) | "No Draft Scheduled" (gray)
+- Quick action: "Review Draft" button
+
+**Stats Row** (4 KPI cards):
+- Drafts This Week: X
+- Avg Review Time: Y min
+- Last Newsletter Sent: Z days ago
+- Engagement Trend: ↑ or ↓
+
+**Upcoming Drafts Calendar**:
+- Week view: Dots on days with scheduled drafts
+- Click dot → View draft preview
+
+**Recent Activity Feed**:
+- "New source added: @elonmusk"
+- "Draft reviewed: 15 min"
+- "Newsletter sent: 250 subscribers"
+
+**Quick Actions Section**:
+- "Add Source" button
+- "Start New Draft Manually" button
+- "View Trends Digest" button
+
+**Tech**: React Dashboard library (e.g., Recharts for charts), Firebase real-time listeners
+
+---
+
+#### 5. **Drafts Manager** (`/dashboard/drafts`)
+
+**Layout**: List view + Detail view (split screen on desktop, full screen on mobile)
+
+**Left Panel - Draft List**:
+- Filters: All / Pending / Reviewed / Sent / Archived
+- Sort: Newest first / Oldest first / Scheduled soon
+- Each list item shows:
+  - Date
+  - Status badge
+  - Subject line preview
+  - Review time (if reviewed)
+
+**Right Panel - Draft Detail**:
+
+**Top Section**: Draft Metadata
+- Subject lines (3 options, user selects one)
+- Scheduled for: Date + time
+- Status: Tag (Pending/Reviewed/Sent)
+
+**Draft Body** (editable rich text editor):
+- AI-generated intro
+- Curated items (each with 👍/👎 buttons)
+- Trends section
+- Closing
+
+**Editing Tools**:
+- Inline edit: Click any section to edit
+- Markdown toolbar: Bold, italic, links, lists
+- "Regenerate Section" button (for AI retry)
+- "Add Item Manually" button
+
+**Feedback Tools**:
+- 👍 "Keep as-is" (applies to whole section)
+- 👎 "Remove" (marks for deletion)
+- ⭐ "Favorite" (saves to personal library)
+
+**Bottom Actions**:
+- "Save Draft" (auto-saves every 30 sec)
+- "Preview" (modal: show as email would look)
+- "Approve & Send" (primary CTA, green button)
+- "Schedule for Later" (date picker)
+- "Archive Draft" (if not needed)
+
+**Mobile Adaptation**:
+- Single column view
+- Swipe gestures for 👍/👎
+- Bottom sheet for actions
+
+**Tech**: Rich text editor (TipTap or Quill), auto-save with debouncing, Firebase Firestore real-time sync
+
+---
+
+#### 6. **Sources Library** (`/dashboard/sources`)
+
+**Layout**: Grid view (cards) or List view (toggle)
+
+**Grid View**:
+- Each source = card with:
+  - Platform icon (Twitter, YouTube, Reddit, etc.)
+  - Source name (e.g., "@elonmusk")
+  - Status indicator: Green (active) / Red (error)
+  - Quick stats: X items scraped, Y curated
+  - Actions: Edit (pencil icon) / Delete (trash icon)
+
+**List View**:
+- Table with columns: Name | Type | Items Scraped | Curated | Last Scrape | Actions
+
+**Top Actions Bar**:
+- Search sources
+- Filter by type: All / Twitter / YouTube / Reddit / Newsletter / Web
+- Filter by status: All / Active / Inactive / Errors
+- "Add Source" button (opens modal)
+
+**Add Source Modal**:
+- Step 1: Select source type (visual buttons)
+- Step 2: Form specific to type (e.g., Twitter handle input)
+- Step 3: Configuration options (scrape frequency, max items)
+- "Add Source" submit button
+- Validation: Check if source already exists
+
+**Edit Source**:
+- Same modal as add, pre-filled with existing data
+- Can pause/resume source
+- Can adjust scrape frequency
+
+**Source Detail Page** (`/dashboard/sources/{sourceId}`):
+- Header: Source name + type + status
+- Tabs:
+  - Overview: Stats, recent items scraped
+  - Items: List of all content from this source (with filters)
+  - Settings: Edit configuration
+  - Performance: Charts (items scraped over time, curation rate)
+
+**Tech**: React grid library (e.g., AG Grid or simple CSS Grid), Firebase CRUD operations
+
+---
+
+#### 7. **Analytics Dashboard** (`/dashboard/analytics`)
+
+**Layout**: Dashboard with charts and tables
+
+**Sections**:
+
+**A. Newsletter Performance**:
+- Line chart: Open rates over time (if email provider integrated)
+- Line chart: Click-through rates
+- Bar chart: Top clicked links
+
+**B. AI Performance**:
+- Gauge chart: Draft acceptance rate (0-100%)
+- Line chart: Avg review time per draft (trend over 30 days)
+- Pie chart: Feedback distribution (👍 vs 👎 vs ⭐)
+
+**C. Content Insights**:
+- Bar chart: Most popular topics (from curated items)
+- Table: Best-performing sources (most items curated)
+- Tag cloud: Top keywords from all drafts
+
+**D. Usage Stats**:
+- Total drafts generated
+- Total newsletters sent
+- Total sources connected
+- Storage used (MB)
+
+**Export Options**:
+- "Download Report" button → PDF or CSV
+- Date range filter: Last 7 days / Last 30 days / Last 90 days / All time
+
+**Tech**: Recharts or Chart.js for visualizations, Firebase analytics queries with aggregation
+
+---
+
+#### 8. **Settings Page** (`/dashboard/settings`)
+
+**Tabs**:
+
+**A. Profile**:
+- Display name (editable)
+- Email (read-only, verified badge)
+- Timezone (dropdown)
+- Password change form
+- "Delete Account" button (with confirmation modal)
+
+**B. Delivery Preferences**:
+- Delivery time (time picker)
+- Delivery frequency (radio buttons)
+- Draft format (dropdown: Markdown/HTML/Plain text)
+- Trends digest: Toggle on/off
+- Email notifications: Toggle on/off
+
+**C. Voice Training**:
+- "Uploaded Newsletters" list (with delete option)
+- "Upload More Examples" button
+- "Retrain Voice" button (triggers background job)
+- Last trained: Date + status (Trained/In Progress)
+- Voice parameters preview (read-only): Tone, sentence length, etc.
+
+**D. Integrations** (post-MVP):
+- Connect Beehiiv: OAuth button
+- Connect Substack: OAuth button
+- Connect email provider (Mailchimp, etc.)
+
+**E. Billing** (post-MVP):
+- Current plan: Free / Starter / Pro
+- Usage this month: X drafts, Y sources
+- "Upgrade Plan" button
+- Billing history table
+
+**Tech**: Form with Firebase Firestore updates, file upload to Firebase Storage
+
+---
+
+#### 9. **Admin Panel** (`/admin`) *(Admin role only)*
+
+**Access Control**: Redirect non-admins to 404
+
+**Tabs**:
+
+**A. User Management**:
+- Table: All users with columns: Name | Email | Role | Signup Date | Last Login | Status | Actions
+- Filters: Role / Account Type / Status (Active/Suspended)
+- Actions per user:
+  - View details (opens modal with full user data)
+  - Impersonate (login as user for debugging)
+  - Suspend account
+  - Delete account (with confirmation)
+
+**B. System Health**:
+- Apify Actor Status: Table of actors with last run status (Success/Failed)
+- Firebase Functions: List of functions with error counts (last 24h)
+- Database Size: Current size / Max size (with alert if >80%)
+- API Quotas: Apify credits remaining, Firebase Firestore reads/writes
+
+**C. Feature Flags**:
+- Table: Feature | Enabled Globally | Enabled for Users
+- Examples:
+  - Trend Engine: Toggle on/off
+  - Voice Training: Toggle on/off
+  - Analytics Dashboard: Toggle on/off
+- "Enable for specific users" → Multi-select user list
+
+**D. Content Moderation**:
+- Flagged content queue (user reports or auto-flagged by AI)
+- Each item: Content preview, Source, User, Reason flagged
+- Actions: Approve, Remove, Ban source
+
+**E. Analytics (Admin View)**:
+- Total users: Count + growth chart
+- Total drafts generated: Count + trend
+- Revenue (post-MVP): MRR, total revenue
+- Error logs: Table of recent errors with severity
+
+**Tech**: Protected routes (Firebase Auth + custom claims for admin role), read-only Firebase access for data tables
+
+---
+
+### Responsive Design Strategy
+
+**Breakpoints**:
+- Mobile: < 640px (single column, bottom nav)
+- Tablet: 640px - 1024px (hybrid layout, collapsible sidebar)
+- Desktop: > 1024px (full sidebar, multi-column content)
+
+**Mobile-First Approach**:
+- Design for mobile first, then enhance for larger screens
+- Use CSS Grid and Flexbox for flexible layouts
+- Touch-friendly UI: Larger buttons (min 44px), swipe gestures
+- Bottom navigation on mobile (Home, Drafts, Sources, Settings)
+
+**Accessibility**:
+- WCAG 2.1 AA compliance
+- Keyboard navigation support
+- Screen reader friendly (semantic HTML, ARIA labels)
+- Color contrast ratios (4.5:1 for text)
+
+---
+
+### Component Library
+
+**Suggested Libraries**:
+- **Tailwind CSS**: Utility-first CSS (fast development, small bundle)
+- **Shadcn/ui**: Pre-built accessible components
+- **React Hook Form**: Form state management
+- **TipTap**: Rich text editor
+- **Recharts**: Data visualization
+- **date-fns**: Date manipulation
+
+**Reusable Components**:
+- `<Button>`: Primary, secondary, danger variants
+- `<Card>`: Container with shadow and padding
+- `<Modal>`: Overlay with close button
+- `<Dropdown>`: Select menus
+- `<Toast>`: Success/error notifications
+- `<Spinner>`: Loading states
+- `<Empty State>`: Placeholder when no data
+
+---
+
+## 12. 🛠️ Technical Stack
+
+### Frontend
+
+**Framework**: React.js (Create React App or Next.js)  
+**Styling**: Tailwind CSS + Shadcn/ui components  
+**State Management**: React Context API + React Query (for server state)  
+**Forms**: React Hook Form + Zod validation  
+**Routing**: React Router (CRA) or Next.js routing  
+**Rich Text Editor**: TipTap or Quill  
+**Charts**: Recharts or Chart.js  
+**HTTP Client**: Axios or Fetch API  
+**Build Tool**: Vite or Webpack (via CRA)
+
+### Backend
+
+**BaaS**: Firebase (Authentication, Firestore, Cloud Functions, Storage, Hosting)  
+**API Framework**: Firebase Cloud Functions (Node.js runtime)  
+**Scraping**: Apify actors (via HTTP API)  
+**Web Crawling**: Exa AI API  
+**AI/ML**: Claude API (Anthropic) via Cloud Functions  
+**Scheduling**: Firebase Cloud Scheduler (cron jobs)  
+**Email Delivery**: Firebase Extensions (SendGrid or Mailgun integration)
+
+### Database
+
+**Primary DB**: Firebase Firestore (NoSQL, real-time)  
+**File Storage**: Firebase Storage (for uploaded newsletters, images)  
+**Caching**: Firestore in-memory cache (client-side)  
+**Backup**: Firestore automated daily backups to Google Cloud Storage
+
+### Authentication
+
+**Provider**: Firebase Authentication  
+**Methods**: Email/Password, Google OAuth  
+**Session Management**: Firebase Auth tokens (JWT)  
+**Role-Based Access**: Firestore Security Rules + Custom Claims (admin role)
+
+### AI/ML
+
+**LLM**: Claude 3.5 Sonnet (via Anthropic API)  
+**Voice Training**: Few-shot learning (in-context learning, no fine-tuning)  
+**Trend Detection**: Custom algorithm (engagement velocity + keyword frequency)  
+**Sentiment Analysis**: Built-in to Claude (via prompt)  
+**Keyword Extraction**: TF-IDF + Claude
+
+### Scraping & Data Collection
+
+**Twitter**: Apify Twitter Scraper (`kaitoeasyapi/twitter-x-data-tweet-scraper-pay-per-result-cheapest`)  
+**YouTube**: Apify YouTube Scraper (`streamers/youtube-channel-scraper`)  
+**Reddit**: Apify Reddit Scraper (`vulnv/reddit-posts-scraper`)  
+**Google Trends**: Apify Google Trends Scraper (`apify/google-trends-scraper`)  
+**Web Crawling**: Exa AI API  
+**Orchestration**: Firebase Cloud Functions (scheduled triggers)
+
+### Deployment & Hosting
+
+**Frontend Hosting**: Firebase Hosting or Vercel  
+**Backend**: Firebase Cloud Functions (serverless)  
+**Domain**: Custom domain via Firebase Hosting  
+**SSL**: Auto-provisioned by Firebase  
+**CDN**: Firebase CDN (global edge caching)
+
+### DevOps & Monitoring
+
+**Version Control**: Git + GitHub  
+**CI/CD**: GitHub Actions → Firebase Deploy  
+**Error Tracking**: Sentry (React) + Firebase Crashlytics  
+**Logging**: Firebase Cloud Functions logs + Google Cloud Logging  
+**Analytics**: Firebase Analytics + Google Analytics 4  
+**Performance Monitoring**: Firebase Performance Monitoring  
+**Uptime Monitoring**: UptimeRobot or Firebase App Check
+
+### Cost Optimization Strategies
+
+**Free Tiers**:
+- Firebase Spark Plan: Free up to 10GB storage, 50K reads/day, 20K writes/day
+- Apify Free Plan: $5 credit/month (~20 runs)
+- Exa AI: Free tier available (check latest)
+- Claude API: Pay-per-use (estimated $0.001-0.01 per draft)
+
+**Cost Control**:
+- Cache scraped content (don't re-scrape same items)
+- Batch API calls (Apify + Claude)
+- Implement rate limiting (prevent abuse)
+- Use Firestore TTL (auto-delete old data after 30 days)
+- Compress images and files (Firebase Storage compression)
+
+**Estimated MVP Costs** (100 users):
+- Firebase: $0 (within free tier)
+- Apify: $25/month (pay-per-result model)
+- Exa AI: $10/month (estimated)
+- Claude API: $50/month (assuming 10 drafts/user/month = 1,000 drafts)
+- **Total: ~$85/month**
+
+---
+
+## 13. 🔌 API Integrations
+
+### Integration 1: Apify Scrapers
+
+**Purpose**: Scrape Twitter, YouTube, Reddit, Google Trends
+
+**Authentication**: API token (stored in Firebase Functions config)  
+**Endpoint Base**: `https://api.apify.com/v2/acts/`
+
+#### Twitter Scraper
+
+**Actor ID**: `kaitoeasyapi/twitter-x-data-tweet-scraper-pay-per-result-cheapest`
+
+**Input Example**:
+```json
+{
+  "from": "elonmusk",
+  "maxItems": 50,
+  "lang": "en",
+  "filter:nativeretweets": false
+}
+```
+
+**Output**: Array of tweet objects (see document)
+
+**Firebase Function**: `scrapeTwitterSource`
+
+**Trigger**: Cloud Scheduler (every 6 hours per source)
+
+**Workflow**:
+1. Fetch all active Twitter sources from Firestore
+2. For each source, call Apify actor
+3. Parse results, deduplicate by tweet ID
+4. Store in ScrapedContent collection
+5. Update source's `lastScrapeAt` and `itemsScrapedLastRun`
+
+#### YouTube Scraper
+
+**Actor ID**: `streamers/youtube-channel-scraper`
+
+**Input Example**:
+```json
+{
+  "startUrls": [{"url": "https://www.youtube.com/@Apify"}],
+  "maxResults": 10,
+  "maxResultsShorts": 0
+}
+```
+
+**Output**: Array of video objects
+
+**Firebase Function**: `scrapeYouTubeSource`
+
+**Trigger**: Cloud Scheduler (every 12 hours per source)
+
+#### Reddit Scraper
+
+**Actor ID**: `vulnv/reddit-posts-scraper`
+
+**Input Example**:
+```json
+{
+  "subreddit_name": "technology",
+  "limit": 20,
+  "category": "hot"
+}
+```
+
+**Output**: Array of post objects
+
+**Firebase Function**: `scrapeRedditSource`
+
+**Trigger**: Cloud Scheduler (every 8 hours per source)
+
+#### Google Trends Scraper
+
+**Actor ID**: `apify/google-trends-scraper`
+
+**Input Example**:
+```json
+{
+  "searchTerms": ["AI", "ChatGPT"],
+  "timeRange": "",
+  "geo": ""
+}
+```
+
+**Output**: Trend data objects
+
+**Firebase Function**: `detectTrends`
+
+**Trigger**: Cloud Scheduler (daily, aggregates from all sources)
+
+---
+
+### Integration 2: Exa AI (Web Crawling)
+
+**Purpose**: Scrape newsletter RSS feeds and custom web URLs
+
+**Authentication**: API key (stored in Firebase Functions config)  
+**Endpoint**: `https://api.exa.ai/search` (check latest docs)
+
+**Use Cases**:
+- Newsletter RSS feed parsing
+- Custom URL content extraction
+- Semantic search for related articles
+
+**Firebase Function**: `scrapeWebSource`
+
+**Trigger**: Cloud Scheduler (every 24 hours per source)
+
+**Workflow**:
+1. Fetch all active newsletter/web sources
+2. For each source:
+   - RSS: Parse XML, extract latest posts
+   - Custom URL: Call Exa AI to extract clean text
+3. Store in ScrapedContent collection
+
+---
+
+### Integration 3: Claude API (Anthropic)
+
+**Purpose**: Generate newsletter drafts, summaries, commentary
+
+**Authentication**: API key (stored in Firebase Functions config)  
+**Endpoint**: `https://api.anthropic.com/v1/messages`
+
+**Model**: `claude-3-5-sonnet-20241022` (or latest)
+
+**Firebase Function**: `generateDraft`
+
+**Trigger**: Cloud Scheduler (daily at 6 AM user timezone, 2 hours before delivery)
+
+**Workflow**:
+1. Fetch user's top 20 curated items (from ScrapedContent)
+2. Fetch user's voice profile (training data)
+3. Construct prompt:
+```
+System: You are a newsletter ghostwriter for [User Name].
+Voice: [Style parameters from training]
+Sources: [JSON of top 20 items]
+Trends: [JSON of top 5 trends]
+Task: Generate a newsletter with intro, 8 curated items (title, summary, commentary), trends section, and closing.
+Format: Markdown.
+```
+4. Call Claude API
+5. Parse response, validate structure
+6. Store in Drafts collection
+7. Trigger email delivery
+
+**Cost Optimization**:
+- Use caching for repeated prompts
+- Batch requests when possible
+- Set max_tokens limit (1500 tokens per draft)
+
+---
+
+### Integration 4: Email Delivery (Firebase Extensions)
+
+**Purpose**: Send draft emails and notifications
+
+**Service**: Firebase Extensions → SendGrid or Mailgun
+
+**Setup**:
+- Install Firebase Extension: "Trigger Email from Firestore"
+- Configure with SendGrid API key
+- Define email templates
+
+**Trigger**: Firestore write to `/mail/{mailId}` collection
+
+**Workflow**:
+1. Cloud Function writes to `/mail` collection:
+```json
+{
+  "to": "user@example.com",
+  "template": {
+    "name": "draft-ready",
+    "data": {
+      "subjectLine": "Your CreatorPulse Draft is Ready",
+      "draftPreview": "[Draft body]",
+      "reviewUrl": "https://creatorpulse.app/dashboard/drafts/xyz"
+    }
+  }
+}
+```
+2. Extension triggers email send
+3. Extension updates document with delivery status
+
+**Email Templates**:
+- Draft ready notification
+- Welcome email
+- Password reset
+- Weekly summary
+
+---
+
+### Integration 5: Firebase Analytics
+
+**Purpose**: Track user behavior and product metrics
+
+**Events Tracked**:
+- `sign_up`: User creates account
+- `onboarding_complete`: User finishes onboarding
+- `source_added`: User connects a source
+- `draft_generated`: AI generates draft
+- `draft_reviewed`: User opens draft for review
+- `draft_sent`: User sends newsletter
+- `feedback_submitted`: User gives 👍/👎/⭐
+- `voice_retrained`: User uploads new training examples
+
+**Custom Parameters**:
+- User role (creator/agency)
+- Draft acceptance rate
+- Review time duration
+- Source types connected
+
+**Firebase Functions Integration**:
+```javascript
+const analytics = admin.analytics();
+await analytics.logEvent('draft_generated', {
+  userId: userId,
+  draftId: draftId,
+  generationTime: 85 // seconds
+});
+```
+
+---
+
+## 14. 🧠 Self-Learning Mechanism
+
+### Overview
+
+The self-learning system continuously improves draft quality through **user feedback loops** and **behavioral learning**. It operates on two levels:
+
+1. **Individual Learning**: Adapts to each user's preferences
+2. **Collective Learning**: Aggregates insights across all users (anonymized)
+
+---
+
+### 14.1 Individual Learning (User-Specific)
+
+#### A. Feedback Collection
+
+**Inline Reactions**:
+- 👍 (Thumbs Up): User approves a curated item or section
+- 👎 (Thumbs Down): User dislikes or removes a section
+- ⭐ (Star): User favorites an item for future reference
+
+**Edit Tracking**:
+- Compare AI draft vs. user's final sent version using diff algorithm
+- Categorize edits:
+  - **Rewrite**: User changed wording significantly
+  - **Delete**: User removed content
+  - **Add**: User inserted new content
+  - **Move**: User reordered sections
+
+**Survey Feedback**:
+- Post-send survey (once/week, optional):
+  - "Rate this week's drafts" (1-5 scale)
+  - "Which sections needed most editing?" (multiselect)
+  - "Any sources to add/remove?" (open text)
+
+**Implicit Signals**:
+- Time spent reviewing draft (faster review = higher satisfaction)
+- Sections user clicks into (indicates interest)
+- Links user hovers over (cursor tracking)
+
+#### B. Feedback Processing
+
+**Storage**: All feedback stored in `/users/{userId}/feedback/{feedbackId}` collection
+
+**Weekly Aggregation** (Cloud Function: `processFeedback`, runs Sundays):
+1. Query all feedback for user from past 7 days
+2. Calculate metrics:
+   - **Acceptance Rate**: % of content kept as-is (👍 reactions / total sections)
+   - **Edit Patterns**: Most edited section types (intro, links, trends, closing)
+   - **Content Preferences**: Topics with most 👍, sources with most curated items
+3. Update user's `voiceProfile.styleParameters`:
+   - If user shortens sentences → Adjust `avgSentenceLength` lower
+   - If user adds more casual language → Adjust `tone` to "more casual"
+   - If user deletes technical jargon → Adjust `vocabularyLevel`
+4. Update source weighting:
+   - Sources with high 👍 rate → Increase `relevanceScore` multiplier
+   - Sources with high 👎 rate → Decrease weight or suggest removal
+
+#### C. Voice Profile Retraining
+
+**Trigger**: User uploads new newsletter examples OR weekly feedback threshold reached
+
+**Process**:
+1. Extract new writing samples (from edits and new uploads)
+2. Combine with existing training data (weighted: recent edits 70%, old uploads 30%)
+3. Re-run style analysis:
+   - Tone: Analyze sentiment and formality level
+   - Sentence structure: Avg length, complexity score
+   - Vocabulary: Unique word count, reading level
+   - Formatting: Header usage, list frequency, emoji usage
+4. Update Claude prompt system instructions with new parameters
+5. Set `voiceProfile.lastUpdated` timestamp
+6. Notify user: "Your writing style has been updated"
+
+**Quality Check**:
+- Generate 3 test paragraphs with new profile
+- Email user for approval before applying to production drafts
+- If user rejects → Revert to previous profile
+
+---
+
+### 14.2 Collective Learning (Cross-User Insights)
+
+#### A. Anonymized Data Aggregation
+
+**What is Collected** (no PII):
+- Draft acceptance rates by topic category
+- Most edited sections across all users
+- Source performance metrics (which sources have highest curation rates)
+- Trend detection accuracy (which trends led to high engagement)
+- Optimal delivery times (when do users review drafts fastest)
+
+**Storage**: Separate Firestore collection `/globalInsights` (admin-only access)
+
+**Privacy**: All data aggregated and anonymized (no individual user identification)
+
+#### B. Global Model Improvements
+
+**Monthly Analysis** (Cloud Function: `updateGlobalModel`, 1st of each month):
+1. Aggregate acceptance rates by:
+   - Topic category (Tech vs. Business vs. Culture)
+   - Source type (Twitter vs. YouTube vs. Reddit)
+   - Content format (Short summary vs. Long commentary)
+2. Identify patterns:
+   - "Tweets with >10K likes have 80% acceptance rate"
+   - "YouTube videos <10 min perform better than long-form"
+   - "Reddit posts from small subreddits (<50K members) more relevant"
+3. Update global scoring weights:
+   - Adjust `relevanceScore` algorithm based on findings
+   - Update trend detection thresholds
+
+**Example Insight**:
+- Discovery: "Users 👎 90% of Reddit posts from r/politics"
+- Action: Lower default relevance score for political subreddits across all users
+- Measurement: Track if 👎 rate decreases next month
+
+#### C. Trend Prediction Improvement
+
+**Current Trend Detection** (V1):
+- Simple velocity algorithm: Mentions per hour growth rate
+- Threshold: >200% growth over 24 hours = "emerging trend"
+
+**Self-Learning Enhancement** (V2, post-MVP):
+1. **Historical Validation**:
+   - Track which detected trends users actually curated
+   - Track which trends led to high newsletter engagement (if email analytics integrated)
+2. **ML Model Training**:
+   - Features: Mention count, velocity, cross-platform presence, time of day, day of week
+   - Labels: "Curated by user" (1) or "Ignored" (0)
+   - Model: Logistic regression or simple neural network (scikit-learn or TensorFlow)
+   - Train on 1,000+ trend examples
+3. **Deployment**:
+   - Replace rule-based threshold with ML model predictions
+   - Model outputs: Trend probability score (0-1)
+   - Surface top 5 trends with highest scores
+4. **Continuous Retraining**:
+   - Retrain model monthly with new labeled data
+   - A/B test: 50% users get ML model, 50% get old algorithm
+   - Compare curation rates → Full rollout if ML wins
+
+---
+
+### 14.3 Feedback Loop Visualization
+
+```
+User Actions
+    ↓
+👍👎⭐ + Edits + Surveys
+    ↓
+Feedback Collection (Firestore)
+    ↓
+Weekly Aggregation (Cloud Function)
+    ↓
+┌─────────────────┬─────────────────┐
+│  Individual     │  Collective     │
+│  Learning       │  Learning       │
+├─────────────────┼─────────────────┤
+│ Update Voice    │ Aggregate       │
+│ Profile         │ Anonymized Data │
+│                 │                 │
+│ Adjust Source   │ Update Global   │
+│ Weights         │ Scoring Model   │
+│                 │                 │
+│ Retrain Claude  │ Improve Trend   │
+│ Prompt          │ Detection       │
+└─────────────────┴─────────────────┘
+    ↓                   ↓
+Next Draft Generation (Improved)
+    ↓
+Measure Impact (Acceptance Rate, Review Time)
+    ↓
+Repeat Loop
+```
+
+---
+
+### 14.4 Self-Learning Metrics Dashboard (Admin View)
+
+**Purpose**: Monitor learning system performance
+
+**Metrics Tracked**:
+
+| METRIC | TARGET | CURRENT | TREND |
+|--------|--------|---------|-------|
+| Global Acceptance Rate | >70% | 68% | ↑ |
+| Avg Review Time | <20 min | 22 min | ↓ |
+| Voice Profile Retraining Rate | >50% users/month | 45% | ↑ |
+| Trend Prediction Accuracy | >80% | 75% | ↑ |
+| Feedback Submission Rate | >60% drafts | 58% | → |
+
+**Charts**:
+- Acceptance rate over time (line chart)
+- Most improved topic categories (bar chart)
+- Source performance distribution (histogram)
+
+---
+
+## 15. 🗺️ User Flow Diagrams
+
+### Flow 1: New User Onboarding
+
+```
+[Landing Page]
+    ↓
+[Click "Start Free Trial"]
+    ↓
+[Sign Up: Email + Password]
+    ↓
+[Email Verification]
+    ↓
+[Onboarding Step 1: Select Role]
+    ├─ Creator
+    └─ Agency
+    ↓
+[Onboarding Step 2: Add Sources]
+    ├─ Add Twitter Handle
+    ├─ Add YouTube Channel
+    ├─ Add Subreddit
+    └─ Skip (can add later)
+    ↓
+[Onboarding Step 3: Upload Past Newsletters]
+    ├─ Upload Files (PDF/TXT)
+    ├─ Paste Text
+    └─ Skip (manual voice training)
+    ↓
+[Onboarding Step 4: Set Delivery Preferences]
+    ├─ Time: 8:00 AM
+    ├─ Frequency: Daily
+    └─ Format: Markdown
+    ↓
+[Confirmation Screen]
+    ↓
+[Redirect to Dashboard]
+    ↓
+[Email: "Your first draft arrives in 24 hours"]
+```
+
+---
+
+### Flow 2: Daily Draft Review & Send
+
+```
+[8:00 AM: Email Delivered]
+    ↓
+[User Opens Email]
+    ↓
+[Reads Trends Digest]
+    ↓
+[Clicks "Review in Dashboard"]
+    ↓
+[Dashboard: Draft Detail View]
+    ↓
+[Skim Intro Paragraph]
+    ├─ Like it → 👍
+    └─ Edit it → Inline edit
+    ↓
+[Review Curated Items (8 items)]
+    ├─ Item 1: 👍 Keep
+    ├─ Item 2: Edit summary
+    ├─ Item 3: 👎 Remove
+    └─ Items 4-8: 👍 Keep
+    ↓
+[Review Trends Section]
+    ├─ Trend 1: Interesting, keep
+    └─ Trend 2: Not relevant, remove
+    ↓
+[Edit Closing Paragraph]
+    ↓
+[Click "Preview"]
+    ↓
+[Review Email Preview]
+    ↓
+[Click "Approve & Send"]
+    ↓
+[Confirmation Modal: "Send to 250 subscribers?"]
+    ↓
+[Confirm]
+    ↓
+[Newsletter Sent via Email Provider]
+    ↓
+[Dashboard: "Newsletter Sent Successfully"]
+    ↓
+[Next Day: Receive Engagement Report]
+```
+
+---
+
+### Flow 3: Adding a New Source
+
+```
+[Dashboard: Sources Page]
+    ↓
+[Click "Add Source" Button]
+    ↓
+[Modal Opens: Select Source Type]
+    ├─ Twitter
+    ├─ YouTube
+    ├─ Reddit
+    ├─ Newsletter RSS
+    └─ Custom URL
+    ↓
+[Example: Select Twitter]
+    ↓
+[Form: Enter Twitter Handle]
+    ├─ Handle: @elonmusk
+    ├─ Max Tweets: 50
+    └─ Exclude Retweets: ✓
+    ↓
+[Click "Add Source"]
+    ↓
+[Validation: Check if handle exists & not duplicate]
+    ├─ Valid → Proceed
+    └─ Invalid → Show error
+    ↓
+[Source Added to Firestore]
+    ↓
+[Trigger First Scrape (Cloud Function)]
+    ↓
+[Dashboard: Source Appears in List]
+    ↓
+[Status: "Scraping in progress..." (yellow)]
+    ↓
+[5 min later: Status: "Active" (green)]
+    ↓
+[Source Items Available in Next Draft]
+```
+
+---
+
+### Flow 4: Admin Moderation
+
+```
+[Admin Logs In]
+    ↓
+[Dashboard: Admin Panel]
+    ↓
+[Tab: Content Moderation]
+    ↓
+[Flagged Content Queue (3 items)]
+    ↓
+[Item 1: User reported tweet as spam]
+    ├─ Preview: "Buy crypto now! Link"
+    ├─ Source: @spambot123
+    └─ User: user@example.com
+    ↓
+[Admin Decision:]
+    ├─ Approve (false positive)
+    ├─ Remove (delete from database)
+    └─ Ban Source (blacklist @spambot123)
+    ↓
+[Select "Ban Source"]
+    ↓
+[Confirmation: "Ban @spambot123 for all users?"]
+    ↓
+[Confirm]
+    ↓
+[Cloud Function: Remove source from all users]
+    ↓
+[Notify affected users: "Source removed: @spambot123"]
+    ↓
+[Admin Log Entry: "Banned source @spambot123"]
+```
+
+---
+
+## 16. ⚙️ Functional Requirements
+
+### 16.1 User Authentication
+
+| REQUIREMENT ID | USER STORY | ACCEPTANCE CRITERIA |
+|----------------|-----------|---------------------|
+| AUTH-01 | As a new user, I want to sign up with email/password so I can create an account | - Email validation (valid format)<br>- Password strength: ≥8 chars, 1 uppercase, 1 number<br>- Email verification sent within 1 min<br>- Account created in Firestore |
+| AUTH-02 | As a user, I want to sign up with Google OAuth so I can skip manual registration | - Google OAuth popup opens<br>- Account auto-created after Google auth<br>- User redirected to onboarding |
+| AUTH-03 | As a user, I want to log in with email/password so I can access my account | - Correct credentials → Dashboard<br>- Incorrect credentials → Error: "Invalid email or password"<br>- Session persists for 30 days |
+| AUTH-04 | As a user, I want to reset my password if I forget it | - "Forgot password" link on login page<br>- Enter email → Reset link sent within 1 min<br>- Link valid for 1 hour<br>- Password reset → Redirect to login |
+| AUTH-05 | As an admin, I want to assign admin role to specific users | - Admin can set custom claim: `admin: true`<br>- Admin role persists across sessions<br>- Non-admin users cannot access admin panel |
+
+---
+
+### 16.2 Source Management
+
+| REQUIREMENT ID | USER STORY | ACCEPTANCE CRITERIA |
+|----------------|-----------|---------------------|
+| SRC-01 | As a user, I want to add a Twitter handle as a source | - Form: Enter handle (with/without @)<br>- Validate handle exists (Apify test call)<br>- Duplicate check: Prevent adding same handle twice<br>- Source saved to Firestore<br>- First scrape triggered within 5 min |
+| SRC-02 | As a user, I want to add a YouTube channel | - Form: Enter channel URL or ID<br>- Validate channel exists<br>- Options: Max videos, include shorts (Y/N)<br>- Source saved, scrape triggered |
+| SRC-03 | As a user, I want to add a subreddit | - Form: Enter subreddit name<br>- Validate subreddit exists<br>- Options: Category (hot/new/top), max posts<br>- Source saved, scrape triggered |
+| SRC-04 | As a user, I want to view all my sources in a list/grid | - All sources displayed with: Name, Type, Status, Items scraped<br>- Filter by type (Twitter/YouTube/Reddit/etc.)<br>- Search by name<br>- Sort by: Name, Date added, Items scraped |
+| SRC-05 | As a user, I want to edit a source's configuration | - Click edit icon → Modal with pre-filled form<br>- Change scrape frequency, max items, etc.<br>- Save → Source updated in Firestore<br>- Next scrape uses new config |
+| SRC-06 | As a user, I want to delete a source | - Click delete icon → Confirmation modal<br>- Confirm → Source deleted from Firestore<br>- Scraped content from source remains (archived)<br>- Source no longer appears in list |
+| SRC-07 | As a user, I want to see if a source is working correctly | - Status indicator: Green (active) / Yellow (slow) / Red (error)<br>- Click source → Detail page with error logs<br>- If error: Show reason (e.g., "Account suspended", "Rate limit") |
+
+---
+
+### 16.3 Voice Training
+
+| REQUIREMENT ID | USER STORY | ACCEPTANCE CRITERIA |
+|----------------|-----------|---------------------|
+| VOICE-01 | As a user, I want to upload past newsletters to train my voice | - Upload methods: File upload (PDF/TXT/MD), Paste text<br>- Accept multiple files (up to 20)<br>- Extract clean text (remove ads, footers)<br>- Store in Firebase Storage<br>- Min 3 examples required for training |
+| VOICE-02 | As a user, I want to see my writing style parameters | - Display: Tone, Avg sentence length, Vocabulary level<br>- Read-only (calculated by system)<br>- Last updated timestamp |
+| VOICE-03 | As a user, I want to retrain my voice with new examples | - "Upload More Examples" button<br>- Add new files → Trigger retraining<br>- Cloud Function: Re-analyze writing style<br>- Generate 3 test paragraphs for approval<br>- Email user for approval |
+| VOICE-04 | As a user, I want to approve/reject voice retraining | - Email with 3 test paragraphs<br>- Links: "Approve" / "Reject"<br>- Approve → Update voice profile<br>- Reject → Revert to old profile<br>- Dashboard notification of decision |
+
+---
+
+### 16.4 Draft Generation
+
+| REQUIREMENT ID | USER STORY | ACCEPTANCE CRITERIA |
+|----------------|-----------|---------------------|
+| DRAFT-01 | As a user, I want to receive a draft newsletter daily | - Cloud Function runs at 6 AM user timezone<br>- Fetch top 20 curated items from last 24h<br>- Fetch top 5 trends<br>- Generate draft via Claude API<br>- Store in Drafts collection<br>- Email sent at 8 AM user timezone |
+| DRAFT-02 | As a user, I want the draft to include 3 subject line options | - AI generates 3 diverse subject lines<br>- User can select one or edit custom<br>- Selected subject line saved to draft |
+| DRAFT-03 | As a user, I want the draft to match my writing style | - Draft uses voice profile parameters<br>- Tone, sentence structure, vocabulary match past newsletters<br>- User can rate match quality (1-10 in survey) |
+| DRAFT-04 | As a user, I want the draft to include 5-8 curated items | - Each item: Title, 2-3 sentence summary, commentary<br>- Items sorted by relevance score (highest first)<br>- Include URL for each item<br>- Diverse sources (not all from one source) |
+| DRAFT-05 | As a user, I want the draft to include top 3 trends | - Trends section with: Trend title, 2-sentence explainer, source links<br>- Trends ranked by trend score<br>- Trends relevant to user's topics |
+| DRAFT-06 | As a user, I want drafts to be generated in under 90 seconds | - P95 generation time ≤90 seconds<br>- If timeout → Retry once<br>- If still fails → Email user with error |
+
+---
+
+### 16.5 Draft Review & Feedback
+
+| REQUIREMENT ID | USER STORY | ACCEPTANCE CRITERIA |
+|----------------|-----------|---------------------|
+| REVIEW-01 | As a user, I want to edit any section of the draft | - Click section → Inline rich text editor<br>- Markdown toolbar: Bold, italic, links, lists<br>- Auto-save every 30 seconds<br>- Manual save button |
+| REVIEW-02 | As a user, I want to give feedback on specific sections | - 👍 button: Mark section as good<br>- 👎 button: Mark section as poor<br>- ⭐ button: Save to favorites<br>- Feedback stored in Firestore |
+| REVIEW-03 | As a user, I want to remove irrelevant curated items | - Click 👎 on item → Item deleted from draft<br>- Item marked for feedback (improve future curation)<br>- Draft auto-saves |
+| REVIEW-04 | As a user, I want to add my own content to the draft | - "Add Item Manually" button<br>- Form: Title, URL, Summary<br>- Item inserted at cursor position<br>- Saved to draft |
+| REVIEW-05 | As a user, I want to preview the draft before sending | - "Preview" button → Modal with email preview<br>- Shows final HTML as subscribers will see<br>- Option to send test email to self |
+| REVIEW-06 | As a user, I want to track time spent reviewing | - Timer starts when draft opened<br>- Pauses when tab inactive (≥5 min)<br>- Total time saved to draft metadata<br>- Displayed in analytics |
+
+---
+
+### 16.6 Draft Sending
+
+| REQUIREMENT ID | USER STORY | ACCEPTANCE CRITERIA |
+|----------------|-----------|---------------------|
+| SEND-01 | As a user, I want to send the draft to my subscribers | - "Approve & Send" button (primary CTA)<br>- Confirmation modal: "Send to X subscribers?"<br>- Confirm → Integrate with email provider (post-MVP)<br>- Draft status → "Sent"<br>- Timestamp recorded |
+| SEND-02 | As a user, I want to schedule the draft for later | - "Schedule for Later" button<br>- Date/time picker<br>- Save → Draft status "Scheduled"<br>- Cloud Function sends at scheduled time |
+| SEND-03 | As a user, I want to export the draft | - "Export" dropdown: Markdown / HTML / Plain text<br>- Download file with draft content<br>- Filename: "CreatorPulse_Draft_YYYY-MM-DD.md" |
+| SEND-04 | As a user, I want to archive old drafts | - "Archive" button<br>- Draft moves to "Archived" filter<br>- Does not appear in main list<br>- Can unarchive later |
+
+---
+
+### 16.7 Analytics
+
+| REQUIREMENT ID | USER STORY | ACCEPTANCE CRITERIA |
+|----------------|-----------|---------------------|
+| ANALYTICS-01 | As a user, I want to see my draft acceptance rate | - Chart: Acceptance rate over last 30 days<br>- Definition: % of draft kept as-is (sections with 👍 / total)<br>- Target line: 70% |
+| ANALYTICS-02 | As a user, I want to see my average review time | - Chart: Avg review time per draft over 30 days<br>- Target line: 20 min<br>- Breakdown: Time per section |
+| ANALYTICS-03 | As a user, I want to see which sources perform best | - Table: Sources ranked by curation rate<br>- Columns: Source name, Items scraped, Items curated, Rate<br>- Sort by: Rate (highest first) |
+| ANALYTICS-04 | As a user, I want to export analytics reports | - "Download Report" button<br>- Format: PDF or CSV<br>- Includes: Charts, tables, date range<br>- Filename: "CreatorPulse_Analytics_YYYY-MM-DD.pdf" |
+
+---
+
+### 16.8 Admin Functions
+
+| REQUIREMENT ID | USER STORY | ACCEPTANCE CRITERIA |
+|----------------|-----------|---------------------|
+| ADMIN-01 | As an admin, I want to view all users | - Table: All users with: Name, Email, Role, Signup date, Status<br>- Filter by: Role, Account type, Status<br>- Search by: Email or name<br>- Pagination: 50 users per page |
+| ADMIN-02 | As an admin, I want to suspend a user account | - Click "Suspend" → Confirmation modal<br>- Confirm → User cannot log in<br>- Email user: "Your account has been suspended"<br>- Admin log entry created |
+| ADMIN-03 | As an admin, I want to view system health | - Dashboard: Apify actor status (all actors)<br>- Firebase function errors (last 24h)<br>- Database size / Max size (alert if >80%)<br>- API quotas: Apify credits, Firestore limits |
+| ADMIN-04 | As an admin, I want to toggle features for specific users | - Feature flags table: Feature name, Enabled globally, Enabled for users<br>- Toggle global: Enables/disables for all<br>- Select users: Multi-select dropdown<br>- Save → Feature flag updated |
+| ADMIN-05 | As an admin, I want to review flagged content | - Queue of flagged content (user reports or auto-flagged)<br>- Each item: Content preview, Reason, User<br>- Actions: Approve, Remove, Ban source<br>- Decision saved to moderation log |
+
+---
+
+## 17. 🧪 Testing & Quality Assurance
+
+### Testing Strategy
+
+**Levels**:
+1. **Unit Tests**: Individual functions (Firebase Functions, utility functions)
+2. **Integration Tests**: API integrations (Apify, Claude, Exa AI)
+3. **End-to-End Tests**: User flows (signup → draft generation → send)
+4. **Manual QA**: UI/UX testing, edge cases
+
+---
+
+### 17.1 Unit Testing
+
+**Framework**: Jest (JavaScript)
+
+**Coverage Target**: ≥70% code coverage
+
+**Test Cases**:
+
+**A. Voice Training Module**:
+- `extractWritingStyle()`: Given sample text, returns correct tone, sentence length, vocabulary level
+- `calculateSimilarityScore()`: Given 2 texts, returns similarity score (0-1)
+- `generateVoicePrompt()`: Given voice parameters, returns valid Claude prompt
+
+**B. Trend Detection Module**:
+- `calculateEngagementVelocity()`: Given engagement data over time, returns correct velocity
+- `detectSpikes()`: Given time series data, identifies spikes correctly
+- `rankTrends()`: Given list of trends, returns sorted by trend score
+
+**C. Content Curation Module**:
+- `deduplicateContent()`: Given list with duplicates (same URL), removes duplicates
+- `calculateRelevanceScore()`: Given content item + user preferences, returns score (0-1)
+- `selectTopItems()`: Given all scraped items, returns top N by relevance
+
+**D. Feedback Processing Module**:
+- `aggregateFeedback()`: Given feedback array, returns summary stats (avg acceptance rate, etc.)
+- `updateVoiceProfile()`: Given feedback, updates voice parameters correctly
+- `detectEditPatterns()`: Given draft edits, categorizes edit types (rewrite/delete/add)
+
+---
+
+### 17.2 Integration Testing
+
+**Framework**: Jest + Supertest (for HTTP API calls)
+
+**Test Cases**:
+
+**A. Apify Scrapers**:
+- Twitter scraper: Call with test handle, verify response structure
+- YouTube scraper: Call with test channel, verify video objects returned
+- Reddit scraper: Call with test subreddit, verify post objects returned
+- Handle rate limits: Test retry logic when rate limited
+- Handle errors: Test error handling when actor fails
+
+**B. Claude API**:
+- Draft generation: Call with test prompt, verify markdown response
+- Voice matching: Call with different voice profiles, verify tone differences
+- Timeout handling: Test retry logic if API times out
+
+**C. Exa AI**:
+- Web crawling: Call with test URL, verify clean text extraction
+- RSS parsing: Call with test RSS feed, verify post extraction
+
+**D. Firebase Services**:
+- Firestore: CRUD operations (create user, read drafts, update source, delete feedback)
+- Storage: Upload/download files (newsletter examples)
+- Authentication: Signup, login, password reset flows
+
+---
+
+### 17.3 End-to-End Testing
+
+**Framework**: Playwright or Cypress
+
+**Test Scenarios**:
+
+**Scenario 1: Full User Journey**:
+1. User signs up (email + password)
+2. Verifies email
+3. Completes onboarding (adds 1 Twitter source, uploads 1 newsletter)
+4. Waits 24 hours (simulated: Cloud Function triggered manually)
+5. Receives draft email
+6. Opens dashboard, reviews draft
+7. Gives 👍 to 2 sections, 👎 to 1 section, edits intro
+8. Approves and sends draft
+9. Views analytics (acceptance rate displayed)
+
+**Expected Results**:
+- User account created in Firestore
+- Source scraped successfully
+- Draft generated with voice match
+- Feedback recorded
+- Analytics updated
+
+**Scenario 2: Admin Moderation**:
+1. Admin logs in
+2. Views user list
+3. Flags content (simulated: user reports spam tweet)
+4. Admin bans source
+5. Affected users notified
+6. Source removed from all users
+
+**Expected Results**:
+- Source banned globally
+- Users cannot re-add banned source
+- Admin log entry created
+
+---
+
+### 17.4 Manual QA Checklist
+
+**Before Launch**:
+
+**Functionality**:
+- [ ] All user flows work (signup, onboarding, draft review, send)
+- [ ] Admin panel accessible (admin role only)
+- [ ] Email delivery works (draft notifications sent)
+- [ ] Voice training generates accurate prompts
+- [ ] Trend detection surfaces relevant trends
+- [ ] Feedback loop records all interactions
+
+**UI/UX**:
+- [ ] Responsive design (mobile, tablet, desktop)
+- [ ] All buttons clickable (no dead links)
+- [ ] Forms validate input correctly (email format, password strength)
+- [ ] Modals open/close smoothly
+- [ ] Loading states display (spinners during API calls)
+- [ ] Error messages clear and helpful
+
+**Performance**:
+- [ ] Page load times <3 seconds (measured with Lighthouse)
+- [ ] Draft generation <90 seconds (P95)
+- [ ] Scraping completes within schedule (no backlog)
+
+**Security**:
+- [ ] Firestore Security Rules enforce role-based access
+- [ ] API keys not exposed in frontend
+- [ ] Password reset links expire after 1 hour
+- [ ] Admin panel requires admin role
+
+**Accessibility**:
+- [ ] WCAG 2.1 AA compliance (keyboard navigation, screen readers)
+- [ ] Color contrast ratios meet standards
+- [ ] Alt text on all images
+
+---
+
+### 17.5 Beta Testing Plan
+
+**Phase 1: Internal Beta** (Week 1-2)
+- **Participants**: 10 internal users (Sriram + EO Labs team + 100x cohort members)
+- **Goal**: Identify critical bugs, validate core features
+- **Feedback**: Daily standups, bug reports in Google Sheet
+
+**Phase 2: Private Beta** (Week 3-4)
+- **Participants**: 50 creators (recruited from Sriram's network)
+- **Goal**: Test at scale, validate product-market fit
+- **Feedback**: Weekly surveys, in-app feedback widget
+
+**Phase 3: Public Beta** (Week 5-8)
+- **Participants**: 500 users (open signups with waitlist)
+- **Goal**: Stress test infrastructure, gather diverse use cases
+- **Feedback**: NPS survey, support tickets
+
+**Success Metrics**:
+- <10 critical bugs per 100 users
+- ≥70% draft acceptance rate
+- ≥4/5 NPS score
+- ≥50% D7 retention
+
+---
+
+## 18. ⚠️ Risks & Mitigations
+
+| RISK | LIKELIHOOD | IMPACT | MITIGATION |
+|------|------------|--------|-----------|
+| **Apify Rate Limits** (scraping blocked due to excessive requests) | High | High | - Implement exponential backoff retry logic<br>- Cache scraped content (don't re-scrape same items)<br>- Batch scrape requests (aggregate multiple sources)<br>- Monitor Apify credit usage daily<br>- Budget alert: Email admin if >80% credits used |
+| **Voice Mismatch** (AI-generated draft doesn't match creator's style) | Medium | High | - Require ≥3 training examples (ideally 10+)<br>- Generate test paragraphs for approval before production<br>- Human-in-loop feedback: User can rate voice match (1-10)<br>- Weekly voice profile updates based on edits<br>- Fallback: Allow users to regenerate sections |
+| **Trend False Positives** (AI flags irrelevant or low-quality trends) | Medium | Medium | - Ensemble detection: Combine velocity + keyword freq + cross-platform<br>- Manual override: User can dismiss trends<br>- Feedback loop: Track which trends users curate → Improve algorithm<br>- Weekly admin review: Flag low-quality trends manually |
+| **Email Deliverability Issues** (drafts not reaching user inboxes) | Low | High | - Use verified sender domain (SPF, DKIM, DMARC)<br>- SendGrid/Mailgun (high deliverability providers)<br>- Batch send with delay (avoid spam triggers)<br>- Monitor bounce rates: Alert if >5%<br>- Fallback: SMS notification if email fails |
+| **Claude API Downtime** (draft generation fails) | Low | High | - Retry logic: 3 attempts with exponential backoff<br>- Fallback to cached previous draft (with disclaimer)<br>- Email user: "Draft delayed, will arrive soon"<br>- Monitor API status: Subscribe to Anthropic status page<br>- Consider multi-provider: Backup to OpenAI GPT if Claude fails |
+| **User Data Breach** (unauthorized access to user data) | Low | Critical | - Firebase Security Rules: Role-based access (strict read/write rules)<br>- Encrypt sensitive data: API keys in Cloud Functions config (not Firestore)<br>- Regular security audits: Quarterly penetration testing<br>- Rate limiting: Prevent brute-force attacks<br>- Bug bounty program (post-launch) |
+| **Poor User Retention** (users sign up but don't return) | Medium | High | - Onboarding optimization: A/B test onboarding flows<br>- Engagement emails: Weekly summary, tips, best practices<br>- Push notifications: Reminder when draft is ready<br>- Referral program: Incentivize sharing (1 free month for 3 referrals)<br>- Cohort analysis: Identify drop-off points, iterate |
+| **High Infrastructure Costs** (Firebase/Apify costs exceed budget) | Medium | Medium | - Firebase free tier: Stay within 50K reads/day, 20K writes/day<br>- Apify pay-per-result: Only pay for successful scrapes<br>- Implement quotas: Max 100 sources per user<br>- Cache aggressively: Reduce redundant API calls<br>- Monitor costs: Firebase billing alerts, Apify credit tracking |
+| **Scalability Bottleneck** (system slows down with >1,000 users) | Low | Medium | - Firebase Firestore: Auto-scales (no manual sharding)<br>- Cloud Functions: Serverless (auto-scales with traffic)<br>- Scraping queue: Use Firebase Tasks for async processing<br>- CDN: Firebase Hosting with global edge caching<br>- Load testing: Simulate 10,000 concurrent users before launch |
+| **Legal Issues** (copyright, scraping ToS violations) | Low | Critical | - Disclaimer: "CreatorPulse is a research tool. Users responsible for content usage."<br>- Respect robots.txt: Apify actors honor exclusions<br>- Fair use: Only scrape public data, no login-walled content<br>- DMCA compliance: Implement takedown process<br>- Legal review: Consult IP lawyer before public launch |
+
+---
+
+## 19. 💰 Costs & Budget
+
+### 19.1 Development Costs (One-Time)
+
+| ITEM | COST | NOTES |
+|------|------|-------|
+| Domain Registration | $12/year | creatorpulse.app (Google Domains) |
+| Design Assets | $0 | Use Canva Free + Figma Community |
+| Firebase Setup | $0 | Spark Plan (free tier) |
+| API Setup | $0 | Apify/Exa/Claude free trials |
+| SSL Certificate | $0 | Auto-provisioned by Firebase |
+| **Total** | **$12** | **Minimal upfront cost** |
+
+---
+
+### 19.2 Operational Costs (Monthly, MVP)
+
+**Assumptions**: 100 active users, 10 drafts/user/month = 1,000 drafts/month
+
+| SERVICE | USAGE | COST | CALCULATION |
+|---------|-------|------|-------------|
+| **Firebase Hosting** | <1GB bandwidth | $0 | Within free tier |
+| **Firebase Firestore** | 200K reads, 50K writes/day | $0 | Within free tier (50K/day) |
+| **Firebase Storage** | 5GB (user uploads) | $0 | Within free tier (5GB) |
+| **Firebase Cloud Functions** | 2M invocations/month | $0 | Within free tier (2M) |
+| **Firebase Authentication** | 100 users | $0 | Always free |
+| **Apify - Twitter Scraper** | 5,000 tweets/month | $1.25 | $0.25 per 1K results |
+| **Apify - YouTube Scraper** | 1,000 videos/month | $0.50 | $0.50 per 1K videos |
+| **Apify - Reddit Scraper** | 2,000 posts/month | $1.00 | $0.50 per 1K posts (estimated) |
+| **Apify - Google Trends** | 100 queries/month | $0.50 | $5 per 1K queries |
+| **Exa AI** | 1,000 searches/month | $10 | $10 per 1K searches (free tier available) |
+| **Claude API** | 1M tokens/month (1,500 tokens/draft × 1,000 drafts) | $30 | $0.003 per 1K input + $0.015 per 1K output tokens |
+| **SendGrid Email** | 5,000 emails/month (5 per user) | $0 | Within free tier (100/day) |
+| **Sentry Error Tracking** | 100 users | $0 | Within free tier |
+| **Domain & SSL** | Included | $0 | Covered by Firebase |
+| **TOTAL** | | **~$43/month** | **For 100 users** |
+
+**Cost Per User**: $0.43/month  
+**Break-Even (if charging $5/user)**: 9 paid users
+
+---
+
+### 19.3 Scaling Costs (1,000 Users)
+
+**Assumptions**: 1,000 users, 10 drafts/user/month = 10,000 drafts/month
+
+| SERVICE | USAGE | COST | NOTES |
+|---------|-------|------|-------|
+| **Firebase Firestore** | 2M reads, 500K writes/day | $6 | Above free tier: $0.06 per 100K reads |
+| **Firebase Storage** | 50GB | $1.25 | $0.026 per GB |
+| **Firebase Cloud Functions** | 20M invocations | $8 | Above free tier: $0.40 per 1M |
+| **Apify - Twitter** | 50K tweets | $12.50 | |
+| **Apify - YouTube** | 10K videos | $5 | |
+| **Apify - Reddit** | 20K posts | $10 | |
+| **Apify - Google Trends** | 1K queries | $5 | |
+| **Exa AI** | 10K searches | $100 | |
+| **Claude API** | 15M tokens (1,500 × 10K drafts) | $300 | Major cost driver |
+| **SendGrid** | 50K emails | $15 | $19.95 plan (100K emails) |
+| **TOTAL** | | **~$462/month** | **For 1,000 users** |
+
+**Cost Per User**: $0.46/month  
+**Break-Even (if charging $5/user)**: 93 paid users
+
+---
+
+### 19.4 Revenue Model (Post-MVP)
+
+**Freemium Model**:
+
+| TIER | PRICE | FEATURES | TARGET USERS |
+|------|-------|----------|--------------|
+| **Free** | $0/month | - 5 sources<br>- 10 drafts/month<br>- 1 newsletter<br>- Basic analytics | Hobbyists, students |
+| **Starter** | $15/month | - 25 sources<br>- 50 drafts/month<br>- 3 newsletters<br>- Full analytics<br>- Priority support | Independent creators |
+| **Pro** | $49/month | - Unlimited sources<br>- Unlimited drafts<br>- 10 newsletters<br>- Advanced analytics<br>- API access<br>- White-label | Agencies, power users |
+| **Enterprise** | Custom | - Custom integrations<br>- Dedicated support<br>- SLA guarantees<br>- On-premise option | Large agencies, media companies |
+
+**Estimated Conversion Rates**:
+- Free → Starter: 5%
+- Free → Pro: 2%
+- Starter → Pro: 15%
+
+**Revenue Projection (Year 1)**:
+- 1,000 users: 50 Starter ($750/mo) + 20 Pro ($980/mo) = **$1,730 MRR**
+- 5,000 users: 250 Starter ($3,750/mo) + 100 Pro ($4,900/mo) = **$8,650 MRR**
+- 10,000 users: 500 Starter ($7,500/mo) + 200 Pro ($9,800/mo) = **$17,300 MRR**
+
+**Break-Even Point**: ~300 users with 5% conversion to paid tiers
+
+---
+
+## 20. 📋 Assumptions & Dependencies
+
+### 20.1 Assumptions
+
+**Product Assumptions**:
+- Creators spend 2-3 hours drafting newsletters manually (validated by user interviews)
+- 70% draft acceptance rate is achievable with 10+ training examples
+- Users check email daily (draft notifications will be seen)
+- Voice training with 3-5 examples is sufficient for MVP (not fine-tuning quality)
+- Trend detection velocity algorithm is 80% accurate (needs validation)
+
+**Technical Assumptions**:
+- Firebase free tier is sufficient for first 100 users
+- Apify actors remain available and reliable (no deprecation)
+- Claude API has <1% downtime (based on Anthropic SLA)
+- Firestore can handle 1M reads/day without sharding
+- Email deliverability rate >95% with SendGrid
+
+**Business Assumptions**:
+- 100x Engineers network provides 50-100 beta users
+- 5% freemium conversion rate is achievable (industry standard: 2-5%)
+- Users willing to pay $15-49/month for time savings
+- Market size: 10,000+ creators in target segments (Substack, Beehiiv, Ghost)
+
+**User Assumptions**:
+- Users have 5-10 trusted sources they regularly check
+- Users publish newsletters 2-7x per week
+- Users value time savings over perfect customization
+- Users provide honest feedback (👍/👎 reactions)
+
+---
+
+### 20.2 Dependencies
+
+**External Dependencies**:
+
+| DEPENDENCY | RISK LEVEL | MITIGATION |
+|------------|-----------|-----------|
+| **Apify Platform** | Medium | - Monitor Apify status page<br>- Have backup scraping scripts (Puppeteer)<br>- Diversify actors (use multiple for same platform) |
+| **Claude API (Anthropic)** | Medium | - Backup to OpenAI GPT-4 if Claude unavailable<br>- Cache recent prompts for failover<br>- Monitor API status |
+| **Exa AI** | Medium | - Use Firecrawl as backup web scraper<br>- Implement fallback to manual RSS parsing |
+| **Firebase** | Low | - Google-backed, 99.95% uptime SLA<br>- Implement data backups (daily exports to GCS)<br>- Monitor Firebase status page |
+| **SendGrid/Mailgun** | Low | - Have backup email provider configured<br>- Monitor deliverability rates |
+
+**Internal Dependencies**:
+
+| DEPENDENCY | OWNER | STATUS | DUE DATE |
+|------------|-------|--------|----------|
+| Firebase Project Setup | Sriram | Not started | Week 1 |
+| Apify Account & API Keys | Sriram | Not started | Week 1 |
+| Claude API Access | Sriram | Not started | Week 1 |
+| Frontend Design (Figma) | TBD | Not started | Week 2 |
+| Landing Page Copy | TBD | Not started | Week 2 |
+| Email Templates Design | TBD | Not started | Week 3 |
+| Beta User Recruitment | Sriram | Not started | Week 4 |
+
+---
+
+### 20.3 Success Dependencies
+
+**For MVP Launch**:
+- [ ] Apify scrapers working reliably (95% success rate)
+- [ ] Claude API voice matching validated (≥7.5/10 user rating)
+- [ ] Email deliverability >90% (tested with 100 test users)
+- [ ] Onboarding flow <5 minutes to complete
+- [ ] First draft generated within 24 hours of signup
+
+**For Product-Market Fit**:
+- [ ] ≥70% draft acceptance rate (validated with 100+ users)
+- [ ] ≥40% D7 retention (users return after 1 week)
+- [ ] ≥5% freemium conversion (users upgrade to paid)
+- [ ] NPS ≥40 (users recommend to others)
+
+**For Scale (1,000+ Users)**:
+- [ ] Infrastructure costs <$0.50 per user
+- [ ] P95 draft generation time <90 seconds
+- [ ] Firebase Firestore performance maintained (<500ms queries)
+- [ ] Support ticket resolution <24 hours
+
+---
+
+## 21. 🔒 Compliance & Privacy
+
+### 21.1 GDPR Compliance (EU Users)
+
+**User Rights**:
+- **Right to Access**: Users can export all their data (Settings → Export Data)
+- **Right to Rectification**: Users can edit profile, sources, voice training data
+- **Right to Erasure**: Users can delete account (Settings → Delete Account)
+- **Right to Data Portability**: Export in JSON format
+- **Right to Object**: Users can opt out of email notifications
+
+**Data Processing**:
+- **Legal Basis**: Legitimate interest (provide newsletter drafting service)
+- **Data Minimization**: Only collect data necessary for service (email, name, sources)
+- **Storage Limitation**: Scraped content deleted after 30 days (Firestore TTL)
+
+**Cookie Policy**:
+- Only essential cookies (Firebase Auth session)
+- No third-party tracking cookies (no Google Analytics in MVP)
+- Cookie consent banner (EU users only)
+
+---
+
+### 21.2 CCPA Compliance (California Users)
+
+**User Rights**:
+- **Right to Know**: Disclose what data is collected (Privacy Policy)
+- **Right to Delete**: Delete account feature
+- **Right to Opt-Out**: Opt out of email notifications
+- **Do Not Sell**: CreatorPulse does not sell user data (no third-party sharing)
+
+**Implementation**:
+- "Do Not Sell My Personal Information" link in footer (California users)
+- Privacy Policy clearly states data usage
+- Annual review of data practices
+
+---
+
+### 21.3 Data Retention Policy
+
+| DATA TYPE | RETENTION PERIOD | REASON |
+|-----------|------------------|--------|
+| User Accounts | Until deletion | Required for service |
+| Scraped Content | 30 days | Optimize storage costs |
+| Drafts (Sent) | 90 days | User may want to reference |
+| Drafts (Archived) | 1 year | User may want to reuse |
+| Feedback Data | 1 year | Improve AI models |
+| Admin Logs | 2 years | Audit trail |
+| Email Logs | 30 days | Deliverability tracking |
+
+**Automatic Deletion**:
+- Firestore TTL: Scraped content, trends, old drafts
+- Cloud Scheduler: Weekly cleanup job for expired data
+
+---
+
+### 21.4 Terms of Service (Key Points)
+
+**Acceptable Use**:
+- Users must own rights to newsletters they upload (voice training)
+- Users responsible for content legality (no copyrighted material)
+- No spamming: Max 1 newsletter/day per account
+- No automation abuse: No bots, no API abuse
+
+**Prohibited Content**:
+- Illegal content (CSAM, terrorism, etc.)
+- Hate speech, harassment
+- Spam, phishing links
+- Malware, viruses
+
+**Service Limitations**:
+- CreatorPulse is "as-is" (no uptime guarantees in free tier)
+- May suspend accounts violating ToS
+- May change pricing or features with 30 days notice
+
+**Intellectual Property**:
+- User owns their newsletters (CreatorPulse has no rights)
+- CreatorPulse owns the AI-generated drafts (but users have license to use)
+- Feedback data used to improve service (anonymized)
+
+---
+
+### 21.5 Privacy & Security Measures
+
+**Data Encryption**:
+- In-transit: All HTTPS (Firebase SSL)
+- At-rest: Firebase Firestore auto-encrypts data
+- API keys: Stored in Firebase Cloud Functions config (not Firestore)
+
+**Access Controls**:
+- Role-based: Admin, Creator, Agency roles
+- Firestore Security Rules: Strict read/write permissions
+- Firebase Authentication: JWT tokens with 30-day expiry
+
+**Audit Logging**:
+- Admin actions logged (AdminLogs collection)
+- Failed login attempts tracked (rate limiting)
+- Data exports logged (user data portability requests)
+
+**Incident Response Plan**:
+1. Detect breach (automated alerts)
+2. Contain breach (disable affected accounts)
+3. Investigate root cause (review logs)
+4. Notify affected users (email within 72 hours)
+5. Report to authorities (GDPR requires 72-hour notification)
+6. Remediate vulnerability (patch system)
+
+---
+
+## 22. 📣 GTM & Rollout Plan
+
+### 22.1 Pre-Launch (Weeks 1-4)
+
+**Goals**: Build product, recruit beta users, generate buzz
+
+**Activities**:
+- **Week 1**: Development kickoff (Firebase setup, Apify integration)
+- **Week 2**: Landing page live (with waitlist)
+- **Week 3**: Beta user recruitment (via LinkedIn, Twitter, 100x network)
+- **Week 4**: Internal beta testing (10 users: EO Labs team + close network)
+
+**Marketing Channels**:
+- LinkedIn posts (Sriram's profile): "Building CreatorPulse, join beta waitlist"
+- Twitter threads: "How I'm automating my newsletter with AI"
+- 100x Engineers Discord: "Beta testers wanted for newsletter tool"
+- Direct outreach: Email 50 creators from personal network
+
+**Metrics**:
+- Landing page visitors: 500
+- Waitlist signups: 100
+- Beta applications: 50
+
+---
+
+### 22.2 Private Beta (Weeks 5-8)
+
+**Goals**: Validate product-market fit, iterate on feedback
+
+**Launch Cohorts**:
+- **Cohort 1 (Week 5)**: 20 users (hand-picked creators)
+- **Cohort 2 (Week 6)**: 30 users (top waitlist applicants)
+- **Cohort 3 (Week 7)**: 50 users (open to 100x network)
+
+**Onboarding Flow**:
+- Personal welcome email from Sriram
+- Onboarding call (15 min, optional): Understand use case, explain features
+- Support: Dedicated Slack channel for beta users
+
+**Feedback Collection**:
+- Weekly surveys: "How satisfied were you this week?" (1-5)
+- In-app feedback widget (Typeform embed)
+- User interviews: 10 in-depth interviews (30 min each)
+
+**Iteration**:
+- Daily bug fixes (critical issues)
+- Weekly feature updates (based on feedback)
+- Bi-weekly retrospectives (team + beta users)
+
+**Success Metrics**:
+- Draft acceptance rate: ≥70%
+- D7 retention: ≥40%
+- NPS: ≥40
+- <5 critical bugs
+
+---
+
+### 22.3 Public Launch (Week 9)
+
+**Goals**: Scale to 500 users, generate press coverage
+
+**Launch Event**:
+- **Date**: Week 9, Friday (optimal for weekend signups)
+- **Announcement Channels**:
+  - LinkedIn post (Sriram + co-founders)
+  - Twitter thread (with demo video)
+  - Product Hunt launch (aim for #1 Product of the Day)
+  - Hacker News "Show HN" post
+  - Indie Hackers post
+  - Reddit: r/SideProject, r/Entrepreneur
+
+**Launch Assets**:
+- 2-minute demo video (YouTube)
+- Press kit (logo, screenshots, founder bios)
+- Blog post: "Why we built CreatorPulse" (publish on Medium + personal blog)
+- Customer testimonials (from beta users)
+
+**PR Strategy**:
+- Pitch to tech blogs: TechCrunch, VentureBeat, The Verge (AI + creator economy angle)
+- Podcast outreach: "My First Million", "Indie Hackers Podcast"
+- Creator community: Post in Beehiiv, Substack, ConvertKit communities
+
+**Promotions**:
+- Early bird: 50% off first 3 months (first 100 paid users)
+- Referral program: Invite 3 friends → 1 month free
+
+**Success Metrics**:
+- Launch day signups: 200
+- Product Hunt ranking: Top 5
+- Press mentions: ≥3 articles
+- Waitlist conversions: ≥60%
+
+---
+
+### 22.4 Growth Phase (Weeks 10-24)
+
+**Goals**: Reach 1,000 users, achieve $10K MRR
+
+**Marketing Channels**:
+
+**1. Content Marketing**:
+- Blog: 2 posts/week (SEO-optimized)
+  - "How to automate your newsletter with AI"
+  - "Best tools for content curation"
+  - "Creator productivity hacks"
+- Guest posts: Publish on Medium, Hacker Noon, Substack
+- Case studies: Feature successful creators (with metrics)
+
+**2. Social Media**:
+- LinkedIn: 3 posts/week (tips, behind-the-scenes, user stories)
+- Twitter: Daily tweets (product updates, tips, engage with creator community)
+- YouTube: Weekly videos (tutorials, product demos)
+
+**3. Community Building**:
+- Launch CreatorPulse community (Discord or Slack)
+- Weekly AMA sessions (Sriram + team answer questions)
+- User-generated content: Encourage users to share their newsletters
+
+**4. Paid Advertising** (Post-Revenue):
+- Google Ads: Target keywords ("newsletter automation", "AI content curation")
+- Facebook/Instagram Ads: Target creator communities (Substack, Beehiiv groups)
+- Budget: $500/month initially, scale based on CAC
+
+**5. Partnerships**:
+- Integrate with Beehiiv, Substack, ConvertKit (official partnerships)
+- Co-marketing: Cross-promote with complementary tools (e.g., Canva, Grammarly)
+
+**Success Metrics**:
+- Month 3: 500 users, $2K MRR
+- Month 6: 1,000 users, $10K MRR
+- Month 12: 5,000 users, $50K MRR
+
+---
+
+### 22.5 Rollout Milestones
+
+| MILESTONE | DATE | GOAL | SUCCESS CRITERIA |
+|-----------|------|------|------------------|
+| Internal Beta | Week 4 | Validate core features | <10 bugs, basic features work |
+| Private Beta | Week 8 | Validate PMF | 70% acceptance rate, 40% D7 retention |
+| Public Launch | Week 9 | Scale to 500 users | 200 signups on launch day |
+| Product-Market Fit | Week 16 | Achieve sustainable growth | 5% conversion, NPS ≥40 |
+| Monetization | Week 20 | First $10K MRR | 500 paid users |
+
+---
+
+## 23. 🚀 Future Expansion (Post-MVP)
+
+### Phase 2 Features (Months 4-6)
+
+**1. Email Provider Integrations**:
+- One-click send to Beehiiv, Substack, ConvertKit, Mailchimp
+- OAuth authentication
+- Subscriber list sync
+- Engagement analytics (open rate, CTR) imported into CreatorPulse
+
+**2. Social Media Publishing**:
+- Auto-post to Twitter/X, LinkedIn from drafts
+- Thread generation (break newsletter into tweet threads)
+- Schedule social posts
+
+**3. Multi-Language Support**:
+- Draft generation in Spanish, French, German, Portuguese
+- Language detection for sources
+- Multilingual voice training
+
+**4. Advanced Analytics**:
+- Predictive analytics: Forecast engagement based on topics
+- A/B testing: Test 2 subject lines, track performance
+- Cohort analysis: Segment subscribers by behavior
+
+**5. Team Collaboration**:
+- Agency feature: Add team members with roles (Editor, Reviewer)
+- Approval workflows: Draft requires 2 approvals before send
+- Comments & annotations on drafts
+
+---
+
+### Phase 3 Features (Months 7-12)
+
+**1. AI-Powered Image Generation**:
+- Auto-generate header images for newsletters (DALL-E integration)
+- Custom image prompts based on newsletter content
+
+**2. Video Integration**:
+- Embed YouTube videos in drafts
+- Auto-generate video summaries
+
+**3. Subscriber Management**:
+- Import subscriber lists
+- Segment subscribers (by topic interest, engagement)
+- Personalized drafts per segment
+
+**4. Mobile App**:
+- iOS and Android apps (React Native)
+- Push notifications for drafts
+- Mobile-optimized editing
+
+**5. Browser Extension**:
+- Chrome extension: Clip content while browsing
+- Save interesting articles, tweets, videos to CreatorPulse
+- One-click add to next draft
+
+---
+
+### Phase 4 Features (Year 2+)
+
+**1. AI Co-Pilot**:
+- Chat interface: "Add more business content to my draft"
+- Real-time draft editing suggestions
+- Voice commands (speech-to-text)
+
+**2. Monetization Features**:
+- Sponsorship marketplace: Connect creators with brands
+- Paywall integration: Premium newsletter sections
+- Affiliate link tracking & commissions
+
+**3. Enterprise Features**:
+- White-label: Agencies can rebrand CreatorPulse
+- Custom domains: Use agency's domain for dashboard
+- SSO (Single Sign-On): Enterprise authentication
+- SLA guarantees: 99.9% uptime for enterprise
+
+**4. API & Webhooks**:
+- Public API: Developers can build on CreatorPulse
+- Webhooks: Trigger actions on draft events (e.g., send to Slack)
+- Zapier/Make.com integration
+
+**5. Advanced AI Features**:
+- Fine-tuned models: Train custom GPT on user's style (not just few-shot)
+- Multi-modal: Analyze videos, podcasts for curation
+- Voice cloning: Generate audio newsletters in creator's voice
+
+---
+
+## 24. 🏁 Conclusion & Next Steps
+
+### Summary
+
+**CreatorPulse** is positioned to solve a critical pain point for content creators: the time-consuming research and drafting process. By leveraging AI, automated scraping, and self-learning mechanisms, CreatorPulse reduces newsletter drafting time from 2-3 hours to under 20 minutes—enabling creators to publish consistently without burnout.
+
+### Key Differentiators
+
+1. **Voice Fidelity**: AI learns creator's unique style (not generic templates)
+2. **Trend Intelligence**: Surfaces emerging topics before mainstream
+3. **Self-Learning**: Continuous improvement through user feedback
+4. **Cost-Effective**: MVP built with free/low-cost tools (Firebase, Apify, Exa AI)
+5. **Scalable**: Serverless architecture supports 10,000+ users
+
+### Immediate Next Steps
+
+**Week 1-2**:
+- [ ] Set up Firebase project (Authentication, Firestore, Storage, Hosting)
+- [ ] Create Apify account, test scrapers (Twitter, YouTube, Reddit)
+- [ ] Obtain Claude API key, test draft generation
+- [ ] Design landing page wireframe (Figma)
+
+**Week 3-4**:
+- [ ] Build MVP frontend (React + Tailwind CSS)
+- [ ] Implement Firebase Cloud Functions (scraping, draft generation)
+- [ ] Deploy landing page with waitlist
+- [ ] Recruit 10 internal beta users
+
+**Week 5-8**:
+- [ ] Launch private beta (50 users)
+- [ ] Collect feedback, iterate weekly
+- [ ] Achieve 70% draft acceptance rate
+- [ ] Prepare for public launch
+
+**Week 9**:
+- [ ] Public launch (Product Hunt, Twitter, LinkedIn)
+- [ ] Target: 200 signups on Day 1
+- [ ] Begin growth marketing efforts
+
+---
+
+### Success Definition
+
+**CreatorPulse MVP is successful if:**
+1. **Users save time**: ≥70% report <20 min review time
+2. **Drafts are high quality**: ≥70% acceptance rate
+3. **Users return**: ≥40% D7 retention
+4. **Users recommend**: NPS ≥40
+5. **Business viability**: ≥5% freemium conversion, $10K MRR by Month 6
+
+---
+
+### Contact & Approval
+
+**Product Owner**: Sriram Kintada  
+**Email**: [Your Email]  
+**GitHub**: [Your GitHub]  
+**LinkedIn**: [Your LinkedIn]
+
+**Approval Date**: ____________  
+**Signature**: ____________
+
+---
+
+**END OF PRD**
+
+---
+
+*This PRD is a living document and will be updated as the product evolves. Version control: Track changes in Git.*
