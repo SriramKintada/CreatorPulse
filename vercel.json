@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/auto-scrape",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/auto-generate",
@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/auto-send",
-      "schedule": "0 * * * *"
+      "schedule": "0 9 * * *"
     }
   ]
 }
