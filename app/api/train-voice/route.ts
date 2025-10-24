@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const GOOGLE_AI_API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY || 'AIzaSyBld0gWekgnB22VKxA6mw_fPEGZUkjWJpM'
+const GOOGLE_AI_API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY || ''
 const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY)
 
 /**
